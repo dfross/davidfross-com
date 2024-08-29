@@ -5,7 +5,7 @@ import '@fontsource/ibm-plex-sans/400.css'
 import '@fontsource/ibm-plex-sans/700.css'
 const { title = 'Personal Website of David Fross' } = Astro.props
 
-import { getWeather } from '../utils/fetchweather'
+import { getWeather } from '../utils/getWeather.ts'
 const weatherData = await getWeather()
 
 interface Props {

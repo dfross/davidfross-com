@@ -5,9 +5,6 @@ import '@fontsource/ibm-plex-sans/400.css'
 import '@fontsource/ibm-plex-sans/700.css'
 const { title = 'Personal Website of David Fross' } = Astro.props
 
-import { getWeather } from '../utils/getWeather.ts'
-const weatherData = await getWeather()
-
 interface Props {
 	title: string
 }
@@ -26,11 +23,13 @@ interface Props {
 			<slot />
 		</main>
 		<footer>
-			<p class="text-balance text-sm tracking-wide text-neutral-400">
-				&copy; 2024 David Fross. All rights reserved. Crafted in Fulshear, TX, where it is currently {
-					weatherData.temp_f !== null ? `${weatherData.temp_f}°F` : 'N/A'
-				} and {weatherData.condition}.
+			<p class="text-pretty text-sm tracking-wide text-neutral-400">
+				&copy; 2024 David Fross. All rights reserved. Crafted in Fulshear, TX, where it is <span
+					id="weather-temp">
+					Loading...
+				</span> with '<span id="weather-condition" class="lowercase">Loading...</span>' conditions.
 			</p>
 		</footer>
+		<script src="/js/weather.js" defer></script>
 	</body>
 </html>

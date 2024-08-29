@@ -23,15 +23,13 @@ interface Props {
 			<slot />
 		</main>
 		<footer>
-			<p class="text-pretty text-sm tracking-wide text-neutral-400">
-				&copy; 2024 David Fross. All rights reserved. Crafted in Fulshear, TX, where it is currently <span
+			<p class="text-balance text-sm tracking-wide text-neutral-500 md:text-pretty">
+				&copy; 2024 David Fross. All rights reserved. Crafted in Fulshear, TX, where it's <span
 					id="weather-temp">
-					Loading...
-				</span> and conditions indicate <span id="weather-condition" class="lowercase">
-					Loading...
-				</span>.
+					⏳︎
+				</span> and conditions indicate <span id="weather-condition" class="lowercase">⏳︎</span>.
 			</p>
 		</footer>
-		<script src="/js/weather.js" defer></script>
+		<script is:inline src="/js/weather.js" defer></script>
 	</body>
 </html>

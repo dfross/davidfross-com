@@ -32,5 +32,16 @@ interface Props {
 			</p>
 		</footer>
 		<script is:inline src="/js/weather.js" defer></script>
+		<!-- Google tag (gtag.js) -->
+		<script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-2NMTBPYB0R"></script>
+		<script is:inline>
+			window.dataLayer = window.dataLayer || []
+			function gtag() {
+				dataLayer.push(arguments)
+			}
+			gtag('js', new Date())
+
+			gtag('config', 'G-2NMTBPYB0R')
+		</script>
 	</body>
 </html>

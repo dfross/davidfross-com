@@ -27,8 +27,10 @@ interface Props {
 			<p class="text-balance pt-9 text-sm tracking-wide text-neutral-400 md:text-pretty">
 				&copy; 2024 David Fross. All rights reserved. Created in Fulshear, TX, where it's currently <span
 					id="weather-temp">
-					⏳︎
-				</span>/<span id="weather-condition" class="lowercase">⏳︎</span>.
+					<span class="inline-block motion-safe:animate-spin">⏳︎</span>
+				</span>/<span id="weather-condition" class="lowercase">
+					<span class="inline-block motion-safe:animate-spin">⏳︎</span>
+				</span>.
 			</p>
 		</footer>
 		<script is:inline src="/js/weather.js" defer></script>

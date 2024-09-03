@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 	const apiKey = '2d3f8dd4efa3453fb80164059242908'
-	const location = '77441' // Adjust as needed
-	const apiUrl = `http://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${location}&aqi=no`
+	const location = '77441'
+	const apiUrl = `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${location}&aqi=no`
 
 	fetch(apiUrl)
 		.then((response) => response.json())

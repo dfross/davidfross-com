@@ -13,7 +13,7 @@
 		"@astrojs/check": "^0.9.3",
 		"@astrojs/tailwind": "^5.1.0",
 		"@fontsource/ibm-plex-sans": "^5.0.21",
-		"astro": "^4.15.1",
+		"astro": "^4.15.2",
 		"astro-icon": "^1.1.1",
 		"prettier": "^3.3.3",
 		"prettier-plugin-astro": "^0.14.1",

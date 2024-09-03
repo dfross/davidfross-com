@@ -18,8 +18,9 @@ interface Props {
 		<meta name="description" content={SITE_DESCRIPTION} />
 		<meta
 			http-equiv="Content-Security-Policy"
-			content="default-src 'self'; script-src 'self'; connect-src 'self' http://api.weatherapi.com;"
+			content="default-src 'self'; script-src 'self' https://www.googletagmanager.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src 'self' https://api.weatherapi.com;"
 		/>
+
 		<title>{SITE_TITLE} - {title}</title>
 	</head>
 	<body

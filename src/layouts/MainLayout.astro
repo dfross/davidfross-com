@@ -32,3 +32,22 @@ interface Props {
 		<GoogleAnalytics />
 	</body>
 </html>
+<script>
+	const animateElements = document.querySelectorAll('.animate')
+	animateElements.forEach((element, index) => {
+		setTimeout(() => {
+			element.classList.add('show')
+		}, index * 100)
+	})
+</script>
+<style is:global>
+	.animate {
+		opacity: 0;
+		translate: 0 -0.5rem;
+		transition: 1000ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+	}
+	.animate.show {
+		opacity: 1;
+		translate: 0 0;
+	}
+</style>

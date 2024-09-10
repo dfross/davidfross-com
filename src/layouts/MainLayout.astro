@@ -22,11 +22,11 @@ interface Props {
 	</head>
 	<body
 		class="mx-auto flex h-full max-w-screen-md flex-col bg-neutral-900 bg-[url('/bg.webp')] bg-cover p-9 pb-0 text-neutral-200">
-		<main class="flex-grow">
+		<main class="flex h-full flex-grow flex-col justify-center">
 			<slot />
 		</main>
-		<footer class="py-9">
-			<p class="text-balance text-sm tracking-wide text-neutral-400 md:text-pretty">
+		<footer>
+			<p class="text-balance py-9 text-sm tracking-wide text-neutral-400 md:text-pretty">
 				&copy; 2024 David Fross. All rights reserved. Created in Fulshear, TX.
 			</p>
 		</footer>

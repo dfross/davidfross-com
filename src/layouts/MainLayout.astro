@@ -4,10 +4,10 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../constants'
 import '@fontsource/ibm-plex-sans/200.css'
 import '@fontsource/ibm-plex-sans/400.css'
 import '@fontsource/ibm-plex-sans/700.css'
-const { title = 'Personal Website of David Fross' } = Astro.props
+const { PAGE_TITLE = 'Personal Website of David Fross' } = Astro.props
 
 interface Props {
-	title: string
+	PAGE_TITLE: string
 }
 ---
 
@@ -18,7 +18,7 @@ interface Props {
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="description" content={SITE_DESCRIPTION} />
-		<title>{SITE_TITLE} - {title}</title>
+		<title>{SITE_TITLE} - {PAGE_TITLE}</title>
 	</head>
 	<body
 		class="mx-auto flex h-full max-w-screen-md flex-col bg-neutral-900 bg-[url('/bg.webp')] bg-cover p-9 pb-0 text-neutral-200">

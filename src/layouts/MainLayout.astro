@@ -1,9 +1,7 @@
 ---
 import GoogleAnalytics from '../components/GoogleAnalytics.astro'
+import { AstroFont } from 'astro-font'
 import { SITE_TITLE, SITE_DESCRIPTION } from '../constants'
-import '@fontsource/ibm-plex-sans/200.css'
-import '@fontsource/ibm-plex-sans/400.css'
-import '@fontsource/ibm-plex-sans/700.css'
 const { PAGE_TITLE = 'Personal Website of David Fross' } = Astro.props
 
 interface Props {
@@ -14,14 +12,29 @@ interface Props {
 <!doctype html>
 <html lang="en" class="h-full">
 	<head>
-		<GoogleAnalytics />
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="description" content={SITE_DESCRIPTION} />
+		<GoogleAnalytics />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="" rel="stylesheet" />
+		<AstroFont
+			config={[
+				{
+					src: [],
+					name: 'IBM Plex Sans',
+					googleFontsURL: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@200;400;700&display=swap',
+					preload: true,
+					display: 'swap',
+					selector: 'body',
+					fallback: 'sans-serif',
+				},
+			]}
+		/>
 		<title>{SITE_TITLE} - {PAGE_TITLE}</title>
 	</head>
-	<body
-		class="mx-auto flex h-full max-w-screen-md flex-col bg-neutral-900 bg-[url('/bg.webp')] bg-cover p-9 pb-0 text-neutral-200">
+	<body class="mx-auto flex h-full max-w-screen-md flex-col bg-neutral-900 bg-[url('/bg.webp')] bg-cover p-9 pb-0 text-neutral-200">
 		<main class="flex h-full flex-grow flex-col justify-center">
 			<slot />
 		</main>

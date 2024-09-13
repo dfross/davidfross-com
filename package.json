@@ -15,6 +15,7 @@
 		"@astrojs/tailwind": "^5.1.0",
 		"@fontsource/ibm-plex-sans": "^5.0.21",
 		"astro": "^4.15.2",
+		"astro-font": "^0.1.81",
 		"astro-icon": "^1.1.1",
 		"prettier": "^3.3.3",
 		"prettier-plugin-astro": "^0.14.1",

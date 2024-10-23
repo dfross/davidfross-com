@@ -16,7 +16,6 @@ interface Props {
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="description" content={SITE_DESCRIPTION} />
 		<link rel="sitemap" href="/sitemap-index.xml" />
-		<GoogleAnalytics />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<AstroFont
@@ -33,6 +32,7 @@ interface Props {
 			]}
 		/>
 		<title>{SITE_TITLE} - {PAGE_TITLE}</title>
+		<GoogleAnalytics />
 	</head>
 	<body class="mx-auto flex h-full max-w-screen-md flex-col bg-neutral-900 bg-[url('/bg.webp')] bg-cover p-9 pb-0 text-neutral-200">
 		<main class="flex h-full flex-grow flex-col justify-center">

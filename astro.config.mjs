@@ -9,5 +9,8 @@ import compressor from 'astro-compressor'
 
 export default defineConfig({
 	site: 'https://www.davidfross.com/',
+	prefetch: {
+		prefetchAll: true,
+	},
 	integrations: [tailwind(), icon(), partytown(), sitemap(), playformInline(), playformCompress(), compressor()],
 })

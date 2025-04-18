@@ -16,7 +16,7 @@
 		"@playform/compress": "^0.1.9",
 		"@playform/inline": "^0.1.2",
 		"@tailwindcss/vite": "^4.1.4",
-		"astro": "^5.7.2",
+		"astro": "^5.7.4",
 		"astro-compressor": "^1.0.0",
 		"astro-font": "^1.1.0",
 		"astro-icon": "^1.1.5",

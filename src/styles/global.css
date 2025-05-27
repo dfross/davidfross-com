@@ -11,7 +11,8 @@
 	white-space: nowrap;
 	border: 0;
 }
-.sr-only:focus {
+.sr-only:focus,
+.sr-only:active {
 	position: static;
 	width: auto;
 	height: auto;
@@ -19,4 +20,9 @@
 	overflow: visible;
 	clip: auto;
 	white-space: normal;
+	background: #222;
+	color: #fff;
+	padding: 0.5em 1em;
+	z-index: 1000;
+	border-radius: 0.25em;
 }

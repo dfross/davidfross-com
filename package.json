@@ -15,15 +15,15 @@
 		"@astrojs/sitemap": "^3.4.0",
 		"@playform/compress": "^0.1.9",
 		"@playform/inline": "^0.1.2",
-		"@tailwindcss/vite": "^4.1.7",
-		"astro": "^5.8.0",
+		"@tailwindcss/vite": "^4.1.8",
+		"astro": "^5.8.1",
 		"astro-compressor": "^1.0.0",
 		"astro-font": "^1.1.0",
 		"astro-icon": "^1.1.5",
 		"prettier": "^3.5.3",
 		"prettier-plugin-astro": "^0.14.1",
-		"prettier-plugin-tailwindcss": "^0.6.11",
-		"tailwindcss": "^4.1.7",
+		"prettier-plugin-tailwindcss": "^0.6.12",
+		"tailwindcss": "^4.1.8",
 		"typescript": "^5.8.3"
 	}
 }

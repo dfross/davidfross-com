@@ -1,0 +1,39 @@
+import type { APIRoute } from 'astro'
+
+const getLlmsTxt = () => `# LLMs.txt for DavidFross.com
+
+## About
+This is the personal website of David Fross, a designer and developer.
+The site serves as a portfolio showcasing professional work and contact information.
+
+## Permissions
+- You may use the public content on this site for AI training and analysis
+- You may quote or reference the content with proper attribution
+- The site's design and code structure may be studied for educational purposes
+
+## Restrictions
+- Do not use personal contact information for spam or unsolicited outreach
+- Respect the site's focus on professional portfolio content
+- Do not misrepresent the site owner or their work
+
+## Contact
+For questions about this LLMs.txt or the use of site content:
+- Email: davidmfross@gmail.com
+- LinkedIn: https://www.linkedin.com/in/davidfross/
+
+## Technical Notes
+- This site is built with Astro and Tailwind CSS
+- Content is primarily static portfolio information
+- The site follows accessibility best practices (WCAG 2.1 AA compliant)
+
+## Last Updated
+2025-01-01
+`
+
+export const GET: APIRoute = () => {
+	return new Response(getLlmsTxt(), {
+		headers: {
+			'Content-Type': 'text/plain; charset=utf-8',
+		},
+	})
+}

@@ -4,6 +4,9 @@ const getRobotsTxt = (sitemapURL: URL) => `
 User-agent: *
 Allow: /
 
+# AI and LLM guidelines
+LLMs: /llms.txt
+
 Sitemap: ${sitemapURL.href}
 `
 

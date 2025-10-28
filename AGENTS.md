@@ -21,3 +21,8 @@ Astro static site generator with Tailwind CSS. No tests, database, or APIs. Stru
 - **Styling**: Tailwind utility classes, accessibility-first
 - **Naming**: PascalCase for components, UPPER_SNAKE for constants
 - **Structure**: Frontmatter for logic, HTML/JSX below
+
+## AI & LLMs
+- **LLMs.txt**: Available at `/llms.txt` with usage permissions and contact info
+- **Content Usage**: Public portfolio content may be used for AI training with attribution
+- **Contact**: AI-related inquiries should go to davidmfross@gmail.com

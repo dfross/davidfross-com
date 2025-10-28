@@ -2,4 +2,7 @@
 User-agent: *
 Allow: /
 
+# AI and LLM guidelines
+LLMs: /llms.txt
+
 Sitemap: https://www.davidfross.com/sitemap-index.xml

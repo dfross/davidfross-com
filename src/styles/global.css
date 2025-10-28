@@ -1,5 +1,23 @@
 @import 'tailwindcss';
 
+/* Skip link styles */
+.skip-link {
+	position: absolute;
+	top: -40px;
+	left: 6px;
+	background: #000;
+	color: #fff;
+	padding: 8px;
+	text-decoration: none;
+	z-index: 1000;
+	border-radius: 4px;
+	transition: top 0.3s;
+}
+.skip-link:focus {
+	top: 6px;
+}
+
+/* Screen reader only content */
 .sr-only {
 	position: absolute;
 	width: 1px;
@@ -25,4 +43,24 @@
 	padding: 0.5em 1em;
 	z-index: 1000;
 	border-radius: 0.25em;
+}
+
+/* Focus indicators for interactive elements */
+a:focus,
+button:focus,
+[role="button"]:focus {
+	outline: 2px solid #fff;
+	outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
 }

@@ -16,6 +16,9 @@ interface Props {
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="description" content={SITE_DESCRIPTION} />
+		<meta name="author" content="David Fross" />
+		<meta name="robots" content="index, follow" />
+		<link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link rel="sitemap" href="/sitemap-index.xml" />
@@ -36,7 +39,7 @@ interface Props {
 		<GoogleAnalytics />
 	</head>
 	<body class="mx-auto flex h-full max-w-screen-md flex-col bg-neutral-900 bg-[url('/bg.webp')] bg-cover p-9 pb-0 text-neutral-200">
-		<a href="#main-content" class="sr-only focus:not-sr-only">Skip to content</a>
+		<a href="#main-content" class="skip-link">Skip to main content</a>
 		<main id="main-content" role="main" class="flex h-full flex-grow flex-col justify-center">
 			<slot />
 		</main>

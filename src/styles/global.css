@@ -48,9 +48,28 @@
 /* Focus indicators for interactive elements */
 a:focus,
 button:focus,
-[role="button"]:focus {
+[role='button']:focus {
 	outline: 2px solid #fff;
 	outline-offset: 2px;
+}
+
+/* Waving hand animation */
+@keyframes wave {
+	0%,
+	100% {
+		transform: rotate(0deg);
+	}
+	25% {
+		transform: rotate(20deg);
+	}
+	75% {
+		transform: rotate(-10deg);
+	}
+}
+.wave {
+	display: inline-block;
+	animation: wave 1.5s ease-in-out infinite;
+	transform-origin: 70% 70%;
 }
 
 /* Reduced motion support */

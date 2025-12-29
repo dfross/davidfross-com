@@ -10,20 +10,22 @@
 		"astro": "astro"
 	},
 	"dependencies": {
-		"@astrojs/check": "^0.9.5",
 		"@astrojs/partytown": "^2.1.4",
 		"@astrojs/sitemap": "^3.6.0",
 		"@playform/compress": "^0.2.0",
 		"@playform/inline": "^0.1.2",
-		"@tailwindcss/vite": "^4.1.17",
-		"astro": "^5.15.9",
+		"astro": "^5.16.6",
 		"astro-compressor": "^1.2.0",
 		"astro-font": "^1.1.0",
-		"astro-icon": "^1.1.5",
-		"prettier": "^3.6.2",
+		"astro-icon": "^1.1.5"
+	},
+	"devDependencies": {
+		"@astrojs/check": "^0.9.6",
+		"@tailwindcss/vite": "^4.1.18",
+		"prettier": "^3.7.4",
 		"prettier-plugin-astro": "^0.14.1",
-		"prettier-plugin-tailwindcss": "^0.7.1",
-		"tailwindcss": "^4.1.17",
+		"prettier-plugin-tailwindcss": "^0.7.2",
+		"tailwindcss": "^4.1.18",
 		"typescript": "^5.9.3"
 	}
 }

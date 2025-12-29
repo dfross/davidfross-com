@@ -6,7 +6,7 @@ import { Icon } from 'astro-icon/components'
 <MainLayout PAGE_TITLE="Hello. I am David Fross - Designer & Developer.">
 	<h1 class="text-2xl">
 		<span class="block">
-			<span class="inline-block">👋 Hello.</span>
+			<span class="inline-block"><span class="wave" aria-hidden="true">👋</span> Hello.</span>
 			<span class="inline-block">I'm David Fross &mdash;</span>
 		</span>
 		<span class="block pt-3 leading-none font-bold tracking-tight uppercase" style="font-size: clamp(3.05rem, 6.06vi + 1.54rem, 6.39rem);">
@@ -17,10 +17,18 @@ import { Icon } from 'astro-icon/components'
 		Maker of digital products and websites that are accessible, a joy to use, and perform exceedingly well.
 	</p>
 	<div class="mt-9 flex gap-6">
-		<a href="https://www.linkedin.com/in/davidfross/" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-400 focus:outline-2 focus:outline-white focus:outline-offset-2" aria-label="Visit David Fross's LinkedIn profile (opens in new tab)">
+		<a
+			href="https://www.linkedin.com/in/davidfross/"
+			target="_blank"
+			rel="noopener noreferrer"
+			class="transition-all duration-200 ease-out hover:scale-110 hover:text-neutral-400 focus:outline-2 focus:outline-offset-2 focus:outline-white"
+			aria-label="Visit David Fross's LinkedIn profile (opens in new tab)">
 			<Icon name="linkedin" size="48" aria-hidden="true" />
 		</a>
-		<a href="mailto:davidmfross@gmail.com" class="hover:text-neutral-400 focus:outline-2 focus:outline-white focus:outline-offset-2" aria-label="Send an email to David Fross">
+		<a
+			href="mailto:davidmfross@gmail.com"
+			class="transition-all duration-200 ease-out hover:scale-110 hover:text-neutral-400 focus:outline-2 focus:outline-offset-2 focus:outline-white"
+			aria-label="Send an email to David Fross">
 			<Icon name="mailbox" size="48" aria-hidden="true" />
 		</a>
 	</div>

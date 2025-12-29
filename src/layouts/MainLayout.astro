@@ -3,6 +3,8 @@ import '../styles/global.css'
 import GoogleAnalytics from '../components/GoogleAnalytics.astro'
 import { AstroFont } from 'astro-font'
 import { SITE_TITLE, SITE_DESCRIPTION } from '../constants'
+
+const currentYear = new Date().getFullYear()
 const { PAGE_TITLE = 'Hello. I am David Fross - Designer & Developer.' } = Astro.props
 
 interface Props {
@@ -38,13 +40,13 @@ interface Props {
 		<title>{SITE_TITLE} - {PAGE_TITLE}</title>
 		<GoogleAnalytics />
 	</head>
-	<body class="mx-auto flex h-full max-w-screen-md flex-col bg-neutral-900 bg-[url('/bg.webp')] bg-cover p-9 pb-0 text-neutral-200">
+	<body class="mx-auto flex h-full max-w-3xl flex-col bg-neutral-900 bg-[url('/bg.webp')] bg-cover p-9 pb-0 text-neutral-200">
 		<a href="#main-content" class="skip-link">Skip to main content</a>
-		<main id="main-content" role="main" class="flex h-full flex-grow flex-col justify-center">
+		<main id="main-content" class="flex h-full grow flex-col justify-center">
 			<slot />
 		</main>
-		<footer role="contentinfo">
-			<p class="py-9 tracking-wide text-balance text-neutral-400 md:text-pretty">&copy; 2025 David Fross. All rights reserved.</p>
+		<footer>
+			<p class="py-9 tracking-wide text-balance text-neutral-300 md:text-pretty">&copy; {currentYear} David Fross. All rights reserved.</p>
 		</footer>
 	</body>
 </html>

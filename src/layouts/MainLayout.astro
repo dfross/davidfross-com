@@ -2,13 +2,23 @@
 import '../styles/global.css'
 import GoogleAnalytics from '../components/GoogleAnalytics.astro'
 import { AstroFont } from 'astro-font'
-import { SITE_TITLE, SITE_DESCRIPTION } from '../constants'
+import { SITE_TITLE, SITE_DESCRIPTION, AUTHOR_NAME, AUTHOR_JOB_TITLE, SOCIAL_LINKS } from '../constants'
 
 const currentYear = new Date().getFullYear()
 const { PAGE_TITLE = 'Hello. I am David Fross - Designer & Developer.' } = Astro.props
 
 interface Props {
 	PAGE_TITLE: string
+}
+
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'Person',
+	name: AUTHOR_NAME,
+	url: Astro.site?.toString() ?? 'https://www.davidfross.com/',
+	jobTitle: AUTHOR_JOB_TITLE,
+	sameAs: [SOCIAL_LINKS.linkedin],
+	email: `mailto:${SOCIAL_LINKS.email}`,
 }
 ---
 
@@ -18,9 +28,15 @@ interface Props {
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="description" content={SITE_DESCRIPTION} />
-		<meta name="author" content="David Fross" />
+		<meta name="author" content={AUTHOR_NAME} />
 		<meta name="robots" content="index, follow" />
+		<meta name="theme-color" content="#171717" />
 		<link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+		<link rel="icon" href="/favicon.ico" sizes="any" />
+		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+		<link rel="manifest" href="/manifest.json" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link rel="sitemap" href="/sitemap-index.xml" />
@@ -38,6 +54,7 @@ interface Props {
 			]}
 		/>
 		<title>{SITE_TITLE} - {PAGE_TITLE}</title>
+		<script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 		<GoogleAnalytics />
 	</head>
 	<body class="mx-auto flex h-full max-w-3xl flex-col bg-neutral-900 bg-[url('/bg.webp')] bg-cover p-9 pb-0 text-neutral-200">

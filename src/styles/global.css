@@ -1,5 +1,14 @@
 @import 'tailwindcss';
 
+/* Display heading utility */
+.text-display {
+	font-size: clamp(3.05rem, 6.06vi + 1.54rem, 6.39rem);
+	line-height: 1;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	text-transform: uppercase;
+}
+
 /* Skip link styles */
 .skip-link {
 	position: absolute;

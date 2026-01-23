@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro'
 import { Icon } from 'astro-icon/components'
+import { SOCIAL_LINKS } from '../constants'
 ---
 
 <MainLayout PAGE_TITLE="Hello. I am David Fross - Designer & Developer.">
@@ -9,16 +10,14 @@ import { Icon } from 'astro-icon/components'
 			<span class="inline-block"><span class="wave" aria-hidden="true">👋</span> Hello.</span>
 			<span class="inline-block">I'm David Fross &mdash;</span>
 		</span>
-		<span class="block pt-3 leading-none font-bold tracking-tight uppercase" style="font-size: clamp(3.05rem, 6.06vi + 1.54rem, 6.39rem);">
-			designer &amp; developer.
-		</span>
+		<span class="text-display block pt-3">designer &amp; developer.</span>
 	</h1>
 	<p class="mt-9 text-2xl font-extralight text-balance">
 		Maker of digital products and websites that are accessible, a joy to use, and perform exceedingly well.
 	</p>
 	<div class="mt-9 flex gap-6">
 		<a
-			href="https://www.linkedin.com/in/davidfross/"
+			href={SOCIAL_LINKS.linkedin}
 			target="_blank"
 			rel="noopener noreferrer"
 			class="transition-all duration-200 ease-out hover:scale-110 hover:text-neutral-400 focus:outline-2 focus:outline-offset-2 focus:outline-white"
@@ -26,7 +25,7 @@ import { Icon } from 'astro-icon/components'
 			<Icon name="linkedin" size="48" aria-hidden="true" />
 		</a>
 		<a
-			href="mailto:davidmfross@gmail.com"
+			href={`mailto:${SOCIAL_LINKS.email}`}
 			class="transition-all duration-200 ease-out hover:scale-110 hover:text-neutral-400 focus:outline-2 focus:outline-offset-2 focus:outline-white"
 			aria-label="Send an email to David Fross">
 			<Icon name="mailbox" size="48" aria-hidden="true" />

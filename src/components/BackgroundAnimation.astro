@@ -28,11 +28,6 @@
 	let mouseX = -1000
 	let mouseY = -1000
 
-	// Virtual cursor for gyroscope
-	let virtualX = -1000
-	let virtualY = -1000
-	let hasGyro = false
-
 	function createGrid() {
 		if (!container) return
 
@@ -49,13 +44,16 @@
 		container.style.gridTemplateRows = `repeat(${rows}, 1fr)`
 
 		const fragment = document.createDocumentFragment()
-		for (let i = 0; i < cols * rows; i++) {
+		const total = cols * rows
+
+		for (let i = 0; i < total; i++) {
 			const filing = document.createElement('div')
 			filing.className = 'filing'
 			fragment.appendChild(filing)
 		}
 		container.appendChild(fragment)
 
+		// Pre-calculate positions to avoid layout thrashing during animation
 		const filingElements = container.querySelectorAll('.filing')
 		filingElements.forEach((el) => {
 			const rect = el.getBoundingClientRect()
@@ -83,53 +81,7 @@
 		mouseY = e.clientY
 	}
 
-	// Handle device orientation (gyroscope)
-	const handleOrientation = (e: DeviceOrientationEvent) => {
-		if (isReducedMotion) return
-		hasGyro = true
-
-		// Map tilts (-45 to 45 deg) to screen space
-		const gamma = e.gamma || 0 // left/right
-		const beta = e.beta || 0 // front/back
-
-		const centerX = window.innerWidth / 2
-		const centerY = window.innerHeight / 2
-
-		// Lerp tilt to virtual cursor
-		virtualX = centerX + (gamma / 45) * centerX
-		virtualY = centerY + (beta / 45) * centerY
-	}
-
-	// Request permission for iOS/Android
-	const requestGyroPermission = async () => {
-		if (
-			typeof DeviceOrientationEvent !== 'undefined' &&
-			// @ts-ignore
-			typeof DeviceOrientationEvent.requestPermission === 'function'
-		) {
-			try {
-				// @ts-ignore
-				const permission = await DeviceOrientationEvent.requestPermission()
-				if (permission === 'granted') {
-					window.addEventListener('deviceorientation', handleOrientation)
-				}
-			} catch (err) {
-				console.error('Gyroscope permission denied:', err)
-			}
-		} else {
-			window.addEventListener('deviceorientation', handleOrientation)
-		}
-	}
-
-	// Auto-attach for Android/Browsers that don't use Permission API
-	// @ts-ignore
-	if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission !== 'function') {
-		window.addEventListener('deviceorientation', handleOrientation)
-	}
-
 	window.addEventListener('mousemove', onMouseMove)
-	window.addEventListener('touchstart', requestGyroPermission, { once: true })
-	window.addEventListener('mousedown', requestGyroPermission, { once: true })
 
 	// Continuous animation loop
 	function animateLoop() {
@@ -138,21 +90,22 @@
 		const time = Date.now() * 0.001
 		const rotationOffset = time * 6
 
-		// Use mouse if active, otherwise use virtual gyro cursor
-		const activeX = hasGyro ? virtualX : mouseX
-		const activeY = hasGyro ? virtualY : mouseY
-
 		for (let i = 0; i < filings.length; i++) {
 			const filing = filings[i]
-			const dx = activeX - filing.x
-			const dy = activeY - filing.y
+			const dx = mouseX - filing.x
+			const dy = mouseY - filing.y
 			const distance = Math.sqrt(dx * dx + dy * dy)
 
+			// Calculate angle to mouse
 			const angle = Math.atan2(dy, dx)
 			const baseRotation = angle * (180 / Math.PI) + 90
+
+			// Add a distance-based "swirl" (vortex) effect
 			const swirl = 90 / (1 + distance * 0.002)
 
+			// Combine mouse-pointing, global rotation, vortex swirl, and random initial offset
 			const finalRotation = baseRotation + rotationOffset + swirl + filing.randomOffset
+
 			filing.el.style.transform = `rotate(${finalRotation}deg)`
 		}
 
@@ -172,7 +125,7 @@
 		animateLoop()
 	}
 
-	// Subtle fade-in
+	// Subtle fade-in on load using the motion library
 	if (container && !isReducedMotion) {
 		animate(
 			container,

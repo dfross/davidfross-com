@@ -100,10 +100,13 @@
 		virtualY = centerY + (beta / 45) * centerY
 	}
 
-	// Request permission for iOS 13+
+	// Request permission for iOS/Android
 	const requestGyroPermission = async () => {
-		// @ts-ignore
-		if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+		if (
+			typeof DeviceOrientationEvent !== 'undefined' &&
+			// @ts-ignore
+			typeof DeviceOrientationEvent.requestPermission === 'function'
+		) {
 			try {
 				// @ts-ignore
 				const permission = await DeviceOrientationEvent.requestPermission()
@@ -116,6 +119,12 @@
 		} else {
 			window.addEventListener('deviceorientation', handleOrientation)
 		}
+	}
+
+	// Auto-attach for Android/Browsers that don't use Permission API
+	// @ts-ignore
+	if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission !== 'function') {
+		window.addEventListener('deviceorientation', handleOrientation)
 	}
 
 	window.addEventListener('mousemove', onMouseMove)

@@ -2,6 +2,9 @@
 	"name": "davidfross-com",
 	"type": "module",
 	"version": "0.0.1",
+	"engines": {
+		"node": ">=22.0.0"
+	},
 	"scripts": {
 		"dev": "astro dev",
 		"start": "astro dev",
@@ -10,18 +13,17 @@
 		"astro": "astro"
 	},
 	"dependencies": {
-		"@astrojs/partytown": "^2.1.4",
-		"@astrojs/sitemap": "^3.6.0",
+		"@astrojs/partytown": "^2.1.5",
+		"@astrojs/sitemap": "^3.7.1",
 		"@playform/compress": "^0.2.0",
 		"@playform/inline": "^0.1.2",
-		"astro": "^5.16.6",
+		"astro": "^6.0.4",
 		"astro-compressor": "^1.2.0",
-		"astro-font": "^1.1.0",
 		"astro-icon": "^1.1.5",
 		"motion": "^12.29.2"
 	},
 	"devDependencies": {
-		"@astrojs/check": "^0.9.6",
+		"@astrojs/check": "^0.9.7",
 		"@tailwindcss/vite": "^4.1.18",
 		"prettier": "^3.7.4",
 		"prettier-plugin-astro": "^0.14.1",

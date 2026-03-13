@@ -1,4 +1,4 @@
-import { defineConfig } from 'astro/config'
+import { defineConfig, fontProviders } from 'astro/config'
 import sitemap from '@astrojs/sitemap'
 import icon from 'astro-icon'
 import partytown from '@astrojs/partytown'
@@ -16,6 +16,14 @@ export default defineConfig({
 	},
 
   integrations: [icon(), partytown(), sitemap(), playformInline(), playformCompress(), compressor()],
+
+  fonts: [
+    {
+      name: 'IBM Plex Sans',
+      cssVariable: '--font-ibm-plex-sans',
+      provider: fontProviders.google(),
+    },
+  ],
 
   vite: {
     plugins: [tailwindcss()],

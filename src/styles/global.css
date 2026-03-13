@@ -1,5 +1,9 @@
 @import 'tailwindcss';
 
+@theme {
+  --font-sans: var(--font-ibm-plex-sans, "IBM Plex Sans"), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
 /* Display heading utility */
 .text-display {
 	font-size: clamp(3.05rem, 6.06vi + 1.54rem, 6.39rem);

@@ -2,6 +2,15 @@
 
 @theme {
   --font-sans: var(--font-ibm-plex-sans, "IBM Plex Sans"), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  /* Easing curves for refined, technical motion */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+
+  /* Design Tokens for Premium Dark Identity */
+  --color-bg-deep: #0a0a0a;
+  --color-muted: rgba(255, 255, 255, 0.4);
+  --color-subtle: rgba(255, 255, 255, 0.2);
 }
 
 /* Display heading utility */
@@ -11,6 +20,9 @@
 	font-weight: 700;
 	letter-spacing: -0.02em;
 	text-transform: uppercase;
+	overflow-wrap: break-word;
+	word-wrap: break-word;
+	hyphens: auto;
 }
 
 /* Skip link styles */
@@ -58,31 +70,39 @@
 	border-radius: 0.25em;
 }
 
-/* Focus indicators for interactive elements */
 a:focus,
 button:focus,
 [role='button']:focus {
-	outline: 2px solid #fff;
-	outline-offset: 2px;
+	outline: 2px solid currentColor;
+	outline-offset: 4px;
+}
+@media (forced-colors: active) {
+	a:focus, button:focus {
+		outline: 2px solid Highlight;
+	}
 }
 
-/* Waving hand animation */
+/* Waving hand animation - triggered intentionally */
 @keyframes wave {
 	0%,
 	100% {
 		transform: rotate(0deg);
 	}
-	25% {
+	20%,
+	60% {
 		transform: rotate(20deg);
 	}
-	75% {
+	40%,
+	80% {
 		transform: rotate(-10deg);
 	}
 }
 .wave {
 	display: inline-block;
-	animation: wave 1.5s ease-in-out infinite;
 	transform-origin: 70% 70%;
+}
+.wave.is-waving {
+	animation: wave 1.2s var(--ease-out-expo);
 }
 
 /* Reduced motion support */

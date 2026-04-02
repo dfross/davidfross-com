@@ -1,142 +1,189 @@
 ---
-
 ---
 
-<div id="background-grid" class="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[#111]">
-	<div id="filings-container" class="absolute inset-0 grid h-full w-full"></div>
+<div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none bg-black" aria-hidden="true">
+	<!-- High-Frequency Kinetic Grid -->
+	<canvas id="kinetic-grid" class="absolute inset-0 h-full w-full opacity-0 transition-opacity duration-1000"></canvas>
+	
+	<!-- Noise Texture Overlay -->
+	<div class="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+
+	<!-- Minimal Fallback -->
+	<div id="grid-fallback" class="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]">
+	</div>
 </div>
 
-<style is:global>
-	.filing {
-		width: 10vh;
-		height: 100vh;
-		background-color: #33333315;
-		border-radius: 9999px;
-		justify-self: center;
-		align-self: center;
-		will-change: transform;
-		transform: rotate(0deg);
-	}
-</style>
-
 <script>
-	import { animate } from 'motion'
+	/**
+	 * David Fross - Kinetic Wireframe Grid (WebGL Shader)
+	 * Warped 3D Grid with mouse-reactive topography.
+	 */
+	const canvas = document.getElementById('kinetic-grid') as HTMLCanvasElement;
+	const fallback = document.getElementById('grid-fallback');
+	
+	// Respect user preferences
+	const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-	const container = document.getElementById('filings-container')
-	const GAP = 120
-	let filings: { el: HTMLElement; x: number; y: number; randomOffset: number }[] = []
-	let mouseX = -1000
-	let mouseY = -1000
+	if (canvas && !prefersReducedMotion) {
+		const gl = canvas.getContext('webgl') as WebGLRenderingContext;
+		
+		if (gl) {
+			const vertexShaderSource = `
+				attribute vec2 position;
+				void main() {
+					gl_Position = vec4(position, 0.0, 1.0);
+				}
+			`;
 
-	function createGrid() {
-		if (!container) return
+			const fragmentShaderSource = `
+				precision highp float;
+				uniform vec2 u_resolution;
+				uniform float u_time;
+				uniform vec2 u_mouse;
 
-		container.innerHTML = ''
-		filings = []
+				// Smooth Edge Line Helper
+				float line(float x, float width, float res) {
+					float delta = 1.0 / res;
+					return smoothstep(width + delta, width, abs(x));
+				}
 
-		const width = window.innerWidth
-		const height = window.innerHeight
+				void main() {
+					vec2 st = gl_FragCoord.xy / u_resolution.xy;
+					float aspect = u_resolution.x / u_resolution.y;
+					st.x *= aspect;
 
-		const cols = Math.ceil(width / GAP)
-		const rows = Math.ceil(height / GAP)
+					// Mouse Perspective Center
+					vec2 mouse_st = u_mouse / u_resolution.xy;
+					mouse_st.x *= aspect;
 
-		container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`
-		container.style.gridTemplateRows = `repeat(${rows}, 1fr)`
+					// Warp the space based on mouse distance (Topography)
+					float dist = distance(st, mouse_st);
+					float ripple = sin(dist * 10.0 - u_time * 2.0) * 0.008 * smoothstep(1.2, 0.0, dist);
+					
+					// 3D Vanishing Perspective (Squash top-left, expand bottom-right)
+					vec2 st_persp = pow(st, vec2(1.6));
+					vec2 p = (st_persp - 0.5 * vec2(aspect, 1.0));
+					p += ripple * (p / (dist + 0.01)); // Surface ripple displacement
+					
+					// 120-Degree Rotation (Architectural Drafting Angle)
+					float angle = radians(120.0);
+					mat2 rot = mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
+					vec2 p_rot = rot * p;
 
-		const fragment = document.createDocumentFragment()
-		const total = cols * rows
+					// Grid Density (Perspective Balanced)
+					float grid_scale = 22.0;
+					vec2 grid_st = fract(p_rot * grid_scale);
+					
+					// Drawing ONLY Angular Lines (Antialiased)
+					float thickness = 0.012;
+					float grid = line(grid_st.x - 0.5, thickness, u_resolution.x);
+					
+					// 'Invisible Architectural' alpha (a whisper-thin trace)
+					float alpha = 0.015 * smoothstep(1.5, 0.0, length(p));
+					alpha += 0.005 * smoothstep(0.8, 0.0, dist); // Subtler trace shimmer
 
-		for (let i = 0; i < total; i++) {
-			const filing = document.createElement('div')
-			filing.className = 'filing'
-			fragment.appendChild(filing)
+					vec3 color = vec3(0.02); // Shadow-on-Shadow charcoal lines (Extreme)
+					
+					// Final Composite
+					gl_FragColor = vec4(color * grid, alpha * grid);
+				}
+			`;
+
+			function createShader(gl, type, source) {
+				const shader = gl.createShader(type);
+				gl.shaderSource(shader, source);
+				gl.compileShader(shader);
+				if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+					gl.deleteShader(shader); return null;
+				}
+				return shader;
+			}
+
+			const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+			const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+			const program = gl.createProgram();
+			gl.attachShader(program, vertexShader);
+			gl.attachShader(program, fragmentShader);
+			gl.linkProgram(program);
+			gl.useProgram(program);
+
+			const positionAttribute = gl.getAttribLocation(program, 'position');
+			const positionBuffer = gl.createBuffer();
+			gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]), gl.STATIC_DRAW);
+			gl.enableVertexAttribArray(positionAttribute);
+			gl.vertexAttribPointer(positionAttribute, 2, gl.FLOAT, false, 0, 0);
+
+			const resolutionUniform = gl.getUniformLocation(program, 'u_resolution');
+			const timeUniform = gl.getUniformLocation(program, 'u_time');
+			const mouseUniform = gl.getUniformLocation(program, 'u_mouse');
+
+			let mouseX = 0, mouseY = 0;
+			const updateCoords = (x, y) => {
+				mouseX = x;
+				mouseY = (window.innerHeight || 1) - y;
+			};
+
+			const mouseHandler = (e) => updateCoords(e.clientX, e.clientY);
+			const touchHandler = (e) => {
+				if (e.touches[0]) updateCoords(e.touches[0].clientX, e.touches[0].clientY);
+			};
+
+			window.addEventListener('mousemove', mouseHandler);
+			window.addEventListener('touchmove', touchHandler, { passive: true });
+			window.addEventListener('touchstart', touchHandler, { passive: true });
+
+			// Throttled Resize for Performance
+			let resizeTimer;
+			function resize() {
+				if (resizeTimer) cancelAnimationFrame(resizeTimer);
+				resizeTimer = requestAnimationFrame(() => {
+					const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+					canvas.width = window.innerWidth * dpr;
+					canvas.height = window.innerHeight * dpr;
+					gl.viewport(0, 0, canvas.width, canvas.height);
+				});
+			}
+
+			window.addEventListener('resize', resize);
+			resize();
+
+			// Lifecycle Management: Eco-Throttling
+			let isVisible = true;
+			const observer = new IntersectionObserver((entries) => {
+				isVisible = entries[0].isIntersecting;
+			}, { threshold: 0.01 });
+			observer.observe(canvas);
+
+			document.addEventListener('visibilitychange', () => {
+				isVisible = document.visibilityState === 'visible';
+			});
+
+			canvas.style.opacity = '1';
+			if (fallback) fallback.style.display = 'none';
+
+			function render(time) {
+				if (!isVisible) {
+					requestAnimationFrame(render);
+					return;
+				}
+
+				gl.uniform2f(resolutionUniform, canvas.width, canvas.height);
+				gl.uniform1f(timeUniform, time * 0.001);
+				gl.uniform2f(mouseUniform, 
+					mouseX * (canvas.width / (window.innerWidth || 1)), 
+					mouseY * (canvas.height / (window.innerHeight || 1))
+				);
+				gl.drawArrays(gl.TRIANGLES, 0, 6);
+				requestAnimationFrame(render);
+			}
+			requestAnimationFrame(render);
 		}
-		container.appendChild(fragment)
-
-		// Pre-calculate positions to avoid layout thrashing during animation
-		const filingElements = container.querySelectorAll('.filing')
-		filingElements.forEach((el) => {
-			const rect = el.getBoundingClientRect()
-			filings.push({
-				el: el as HTMLElement,
-				x: rect.left + rect.width / 2,
-				y: rect.top + rect.height / 2,
-				randomOffset: Math.random() * 360,
-			})
-		})
 	}
+</script>
 
-	// Check for reduced motion preference
-	const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
-	let isReducedMotion = prefersReducedMotion.matches
-
-	prefersReducedMotion.addEventListener('change', () => {
-		isReducedMotion = prefersReducedMotion.matches
-	})
-
-	// Handle mouse movement
-	const onMouseMove = (e: MouseEvent) => {
-		if (isReducedMotion) return
-		mouseX = e.clientX
-		mouseY = e.clientY
-	}
-
-	window.addEventListener('mousemove', onMouseMove)
-
-	// Continuous animation loop
-	function animateLoop() {
-		if (isReducedMotion) return
-
-		const time = Date.now() * 0.001
-		const rotationOffset = time * 6
-
-		for (let i = 0; i < filings.length; i++) {
-			const filing = filings[i]
-			const dx = mouseX - filing.x
-			const dy = mouseY - filing.y
-			const distance = Math.sqrt(dx * dx + dy * dy)
-
-			// Calculate angle to mouse
-			const angle = Math.atan2(dy, dx)
-			const baseRotation = angle * (180 / Math.PI) + 90
-
-			// Add a distance-based "swirl" (vortex) effect
-			const swirl = 90 / (1 + distance * 0.002)
-
-			// Combine mouse-pointing, global rotation, vortex swirl, and random initial offset
-			const finalRotation = baseRotation + rotationOffset + swirl + filing.randomOffset
-
-			filing.el.style.transform = `rotate(${finalRotation}deg)`
-		}
-
-		requestAnimationFrame(animateLoop)
-	}
-
-	// Handle window resize
-	let resizeTimeout: ReturnType<typeof setTimeout>
-	window.addEventListener('resize', () => {
-		clearTimeout(resizeTimeout)
-		resizeTimeout = setTimeout(createGrid, 250)
-	})
-
-	// Initial setup
-	createGrid()
-	if (!isReducedMotion) {
-		animateLoop()
-	}
-
-	// Subtle fade-in on load using the motion library
-	if (container && !isReducedMotion) {
-		animate(
-			container,
-			{
-				opacity: [0.25, 1],
-				scale: [4, 1.5],
-			} as any,
-			{
-				duration: 4,
-				ease: 'easeOut',
-			},
-		)
+<style>
+	canvas {
+		background-color: #050505;
 	}
 </script>

@@ -19,8 +19,7 @@
 		"@playform/inline": "^0.1.2",
 		"astro": "^6.0.4",
 		"astro-compressor": "^1.2.0",
-		"astro-icon": "^1.1.5",
-		"motion": "^12.29.2"
+		"astro-icon": "^1.1.5"
 	},
 	"devDependencies": {
 		"@astrojs/check": "^0.9.7",

@@ -2,14 +2,14 @@
 import '../styles/global.css'
 import GoogleAnalytics from '../components/GoogleAnalytics.astro'
 import BackgroundAnimation from '../components/BackgroundAnimation.astro'
-import { Font } from 'astro:assets'
+import { ClientRouter } from 'astro:transitions'
 import { SITE_TITLE, SITE_DESCRIPTION, AUTHOR_NAME, AUTHOR_JOB_TITLE, SOCIAL_LINKS } from '../constants'
 
 const currentYear = new Date().getFullYear()
 const { PAGE_TITLE = 'Hello. I am David Fross - Designer & Developer.' } = Astro.props
 
 interface Props {
-	PAGE_TITLE: string
+	PAGE_TITLE?: string
 }
 
 const jsonLd = {
@@ -28,32 +28,47 @@ const jsonLd = {
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+
+		<!-- Primary Meta Tags -->
+		<title>{SITE_TITLE} | {PAGE_TITLE}</title>
+		<meta name="title" content={PAGE_TITLE} />
 		<meta name="description" content={SITE_DESCRIPTION} />
-		<meta name="author" content={AUTHOR_NAME} />
+		<link rel="canonical" href={Astro.url} />
+
+		<!-- Open Graph / Facebook -->
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content={Astro.url} />
+		<meta property="og:title" content={`${SITE_TITLE} | ${PAGE_TITLE}`} />
+		<meta property="og:description" content={SITE_DESCRIPTION} />
+
+		<!-- Twitter -->
+		<meta property="twitter:card" content="summary" />
+		<meta property="twitter:url" content={Astro.url} />
+		<meta property="twitter:title" content={`${SITE_TITLE} | ${PAGE_TITLE}`} />
+		<meta property="twitter:description" content={SITE_DESCRIPTION} />
+
+		<!-- Theme Settings -->
+		<meta name="theme-color" content="#0a0a0a" />
+		<meta name="color-scheme" content="dark" />
 		<meta name="robots" content="index, follow" />
-		<meta name="theme-color" content="#171717" />
-		<link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
-		<link rel="icon" href="/favicon.ico" sizes="any" />
-		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-		<link rel="manifest" href="/manifest.json" />
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<meta name="author" content={AUTHOR_NAME} />
+		
 		<link rel="sitemap" href="/sitemap-index.xml" />
-		<Font cssVariable="--font-ibm-plex-sans" preload />
-		<title>{SITE_TITLE} - {PAGE_TITLE}</title>
+		<ClientRouter />
+		
 		<script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 		<GoogleAnalytics />
 	</head>
-	<body class="mx-auto flex h-full max-w-3xl flex-col bg-neutral-900 p-9 pb-0 text-neutral-200">
+	<body class="mx-auto flex min-h-screen max-w-3xl flex-col bg-bg-deep p-6 md:p-9 pb-0 text-neutral-200">
 		<BackgroundAnimation />
 		<a href="#main-content" class="skip-link">Skip to main content</a>
-		<main id="main-content" class="flex h-full grow flex-col justify-center">
+		<main id="main-content" class="flex grow flex-col justify-center py-12 md:py-0">
 			<slot />
 		</main>
 		<footer>
-			<p class="py-9 text-balance text-neutral-300 md:text-pretty">&copy; {currentYear} David Fross. All rights reserved.</p>
+			<p class="py-6 text-balance text-neutral-300 md:py-12 md:text-pretty">&copy; {currentYear} David Fross. All rights reserved.</p>
 		</footer>
 	</body>
 </html>

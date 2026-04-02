@@ -5,30 +5,141 @@ import { SOCIAL_LINKS } from '../constants'
 ---
 
 <MainLayout PAGE_TITLE="Hello. I am David Fross - Designer & Developer.">
-	<h1 class="text-2xl">
-		<span class="block">
-			<span class="inline-block"><span class="wave" aria-hidden="true">👋</span> Hello.</span>
-			<span class="inline-block">I'm David Fross &mdash;</span>
-		</span>
-		<span class="text-display block pt-3">designer &amp; developer.</span>
-	</h1>
-	<p class="mt-9 text-2xl font-extralight text-balance">
-		Maker of digital products and websites that are accessible, a joy to use, and perform exceedingly well.
-	</p>
-	<div class="mt-9 flex gap-6">
-		<a
-			href={SOCIAL_LINKS.linkedin}
-			target="_blank"
-			rel="noopener noreferrer"
-			class="transition-all duration-200 ease-out hover:scale-110 hover:text-neutral-400 focus:outline-2 focus:outline-offset-2 focus:outline-white"
-			aria-label="Visit David Fross's LinkedIn profile (opens in new tab)">
-			<Icon name="linkedin" size="48" aria-hidden="true" />
-		</a>
-		<a
-			href={`mailto:${SOCIAL_LINKS.email}`}
-			class="transition-all duration-200 ease-out hover:scale-110 hover:text-neutral-400 focus:outline-2 focus:outline-offset-2 focus:outline-white"
-			aria-label="Send an email to David Fross">
-			<Icon name="mailbox" size="48" aria-hidden="true" />
-		</a>
+	<div class="relative z-10 mx-auto max-w-4xl">
+		<h1 class="text-2xl">
+			<span class="block overflow-hidden py-1">
+				<span class="inline-block reveal"><span id="wave-hand" class="wave" aria-hidden="true">👋</span> Hello.</span>
+				<span class="inline-block reveal reveal-delayed ms-1">I'm David Fross &mdash;</span>
+			</span>
+			<div class="overflow-hidden py-1">
+				<span class="text-display block pt-3 reveal reveal-delayed-more">Designer & Developer.</span>
+			</div>
+		</h1>
+		<div class="overflow-hidden py-1">
+			<p class="mt-6 max-w-2xl text-2xl font-extralight text-balance reveal reveal-delayed-3 opacity-90">
+				Maker of digital products and websites that are accessible, a joy to use, and perform exceedingly well.
+			</p>
+		</div>
+		<nav class="-ms-4 mt-12 overflow-hidden px-4 py-4" aria-label="Social links">
+			<div class="flex gap-4 reveal reveal-delayed-4">
+				<a
+					href={SOCIAL_LINKS.linkedin}
+					target="_blank"
+					rel="me noopener noreferrer"
+					title="Visit David Fross's LinkedIn profile"
+					class="flex size-14 items-center justify-center rounded-2xl text-muted transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-1.5 hover:text-white active:translate-y-0 focus-visible:outline-none focus:ring-1 focus:ring-subtle"
+					aria-label="Visit David Fross's LinkedIn profile (opens in new tab)">
+					<Icon name="linkedin" size="48" aria-hidden="true" />
+				</a>
+				<a
+					href={`mailto:${SOCIAL_LINKS.email}`}
+					rel="me"
+					title="Send an email to David Fross"
+					class="flex size-14 items-center justify-center rounded-2xl text-muted transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-1.5 hover:text-white active:translate-y-0 focus-visible:outline-none focus:ring-1 focus:ring-subtle"
+					aria-label="Send an email to David Fross">
+					<Icon name="mailbox" size="48" aria-hidden="true" />
+				</a>
+			</div>
+		</nav>
 	</div>
+
+	<style>
+		.reveal {
+			opacity: 0;
+			animation: 
+				reveal-slide 2s var(--ease-out-expo) both,
+				reveal-fade 0.8s linear both;
+			will-change: transform, opacity;
+		}
+
+		.reveal-delayed {
+			animation-delay: 0.15s;
+		}
+
+		.reveal-delayed-more {
+			animation-delay: 0.3s;
+		}
+
+		.reveal-delayed-3 {
+			animation-delay: 0.45s;
+		}
+
+		.reveal-delayed-4 {
+			animation-delay: 0.6s;
+		}
+
+		@keyframes reveal-slide {
+			from {
+				transform: translateY(100%);
+			}
+			to {
+				transform: translateY(0);
+			}
+		}
+
+		@keyframes reveal-fade {
+			from {
+				opacity: 0;
+			}
+			to {
+				opacity: 1;
+			}
+		}
+
+		.wave {
+			display: inline-block;
+			transform-origin: 70% 70%;
+			will-change: transform;
+		}
+
+		.wave.is-waving {
+			animation: hand-wave 1.8s cubic-bezier(0.4, 0, 0.2, 1) 2;
+		}
+
+		@keyframes hand-wave {
+			0% { transform: rotate(0deg); }
+			15% { transform: rotate(14deg); }
+			30% { transform: rotate(-8deg); }
+			40% { transform: rotate(14deg); }
+			50% { transform: rotate(-4deg); }
+			60% { transform: rotate(10deg); }
+			70% { transform: rotate(0deg); }
+			100% { transform: rotate(0deg); }
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			.wave.is-waving {
+				animation: none;
+			}
+		}
+	</style>
+
+	<script>
+		const wave = document.getElementById('wave-hand');
+		if (wave) {
+			// Entrance wave on a slight delay
+			setTimeout(() => {
+				wave.classList.add('is-waving');
+			}, 800);
+
+			const triggerWave = () => {
+				wave.classList.remove('is-waving');
+				void wave.offsetWidth; // Trigger reflow
+				wave.classList.add('is-waving');
+			};
+
+			wave.addEventListener('mouseenter', triggerWave);
+			wave.addEventListener('touchstart', triggerWave, { passive: true });
+		}
+
+		// Professional Developer Easter Egg
+		console.log(
+			'%c👋 Hello, curious developer.',
+			'font-family: system-ui; font-size: 1.2rem; font-weight: bold; color: #e5e5e5; background: #0a0a0a; padding: 4px 8px; border-radius: 4px;'
+		);
+		console.log(
+			'%cI see you looking under the hood. Like what you see? Let’s build something together.',
+			'font-family: system-ui; font-size: 1rem; color: #a3a3a3;'
+		);
+	</script>
 </MainLayout>

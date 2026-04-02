@@ -15,7 +15,7 @@ export default defineConfig({
       prefetchAll: true,
 	},
 
-  integrations: [icon(), partytown(), sitemap(), playformInline(), playformCompress(), compressor()],
+  integrations: [icon(), partytown(), sitemap(), compressor()],
 
   fonts: [
     {

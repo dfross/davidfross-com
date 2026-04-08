@@ -27,7 +27,7 @@ For questions about this LLMs.txt or the use of site content:
 - The site follows accessibility best practices (WCAG 2.1 AA compliant)
 
 ## Last Updated
-2025-01-01
+2026-04-08
 `
 
 export const GET: APIRoute = () => {

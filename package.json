@@ -17,17 +17,20 @@
 		"@astrojs/sitemap": "^3.7.1",
 		"@playform/compress": "^0.2.0",
 		"@playform/inline": "^0.1.2",
-		"astro": "^6.1.8",
+		"astro": "^6.1.9",
 		"astro-compressor": "^1.2.0",
 		"astro-icon": "^1.1.5"
 	},
 	"devDependencies": {
-		"@astrojs/check": "^0.9.7",
-		"@tailwindcss/vite": "^4.1.18",
+		"@astrojs/check": "^0.9.8",
+		"@tailwindcss/vite": "^4.2.4",
 		"prettier": "^3.8.2",
 		"prettier-plugin-astro": "^0.14.1",
 		"prettier-plugin-tailwindcss": "^0.7.2",
-		"tailwindcss": "^4.1.18",
+		"tailwindcss": "^4.2.4",
 		"typescript": "^5.9.3"
+	},
+	"overrides": {
+		"vite": "8.0.10"
 	}
 }

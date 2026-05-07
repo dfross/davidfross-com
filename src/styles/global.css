@@ -1,7 +1,9 @@
 @import 'tailwindcss';
 
 @theme {
-  --font-sans: var(--font-ibm-plex-sans, "IBM Plex Sans"), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+	--font-sans:
+		var(--font-ibm-plex-sans, 'IBM Plex Sans'), ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+		'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
 /* Display heading utility */
@@ -66,15 +68,14 @@ button:focus,
 	outline-offset: 2px;
 }
 
-
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
 	*,
 	*::before,
 	*::after {
-		animation-duration: 0.01ms !important;
+		animation: none !important;
 		animation-iteration-count: 1 !important;
-		transition-duration: 0.01ms !important;
+		transition: none !important;
 		scroll-behavior: auto !important;
 	}
 }

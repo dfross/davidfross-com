@@ -1,20 +1,24 @@
 # Agent Instructions for DavidFross.com
 
 ## Commands
+
 - **Dev server**: `npm run dev` (astro dev)
 - **Build**: `npm run build` (astro check && astro build)
 - **Preview**: `npm run preview` (astro preview)
 - **Type check**: `npx astro check`
 
 ## Architecture
+
 Astro static site generator with Tailwind CSS. No tests, database, or APIs. Structure:
+
 - `src/pages/` - Astro pages
 - `src/layouts/` - Layout components
 - `src/components/` - Reusable components
 - `src/styles/` - Global styles
-- Integrations: sitemap, icons, partytown, compression
+- Integrations: sitemap, icons, partytown
 
 ## Code Style
+
 - **Formatting**: Prettier with tabs, single quotes, no semicolons, trailing commas
 - **Imports**: Relative paths (`../`), destructure from constants
 - **Types**: TypeScript interfaces for component props
@@ -23,6 +27,7 @@ Astro static site generator with Tailwind CSS. No tests, database, or APIs. Stru
 - **Structure**: Frontmatter for logic, HTML/JSX below
 
 ## AI & LLMs
+
 - **LLMs.txt**: Available at `/llms.txt` with usage permissions and contact info
 - **Content Usage**: Public portfolio content may be used for AI training with attribution
 - **Contact**: AI-related inquiries should go to davidmfross@gmail.com

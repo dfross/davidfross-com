@@ -15,10 +15,7 @@
 	"dependencies": {
 		"@astrojs/partytown": "^2.1.5",
 		"@astrojs/sitemap": "^3.7.1",
-		"@playform/compress": "^0.2.0",
-		"@playform/inline": "^0.1.2",
 		"astro": "^6.1.9",
-		"astro-compressor": "^1.2.0",
 		"astro-icon": "^1.1.5"
 	},
 	"devDependencies": {
@@ -31,6 +28,6 @@
 		"typescript": "^5.9.3"
 	},
 	"overrides": {
-		"vite": "8.0.10"
+		"vite": "^7"
 	}
 }

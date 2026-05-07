@@ -6,7 +6,7 @@ This repository hosts all the files for my personal website, [davidfross.com](ht
 
 ## Overview
 
-This repository contains the static assets required to run my personal website. 
+This repository contains the static assets required to run my personal website.
 
 ## License
 

@@ -24,7 +24,7 @@ For questions about this LLMs.txt or the use of site content:
 ## Technical Notes
 - This site is built with Astro and Tailwind CSS
 - Content is primarily static portfolio information
-- The site follows accessibility best practices (WCAG 2.1 AA compliant)
+- The site is built with accessibility best practices in mind
 
 ## Last Updated
 2026-04-08

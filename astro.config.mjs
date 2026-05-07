@@ -2,31 +2,27 @@ import { defineConfig, fontProviders } from 'astro/config'
 import sitemap from '@astrojs/sitemap'
 import icon from 'astro-icon'
 import partytown from '@astrojs/partytown'
-import playformCompress from '@playform/compress'
-import playformInline from '@playform/inline'
-import compressor from 'astro-compressor'
-
-import tailwindcss from '@tailwindcss/vite';
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
-  site: 'https://www.davidfross.com/',
+	site: 'https://www.davidfross.com/',
 
-  prefetch: {
-      prefetchAll: true,
+	prefetch: {
+		prefetchAll: true,
 	},
 
-  integrations: [icon(), partytown(), sitemap(), playformInline(), playformCompress(), compressor()],
+	integrations: [icon(), partytown(), sitemap()],
 
-  fonts: [
-    {
-      name: 'IBM Plex Sans',
-      cssVariable: '--font-ibm-plex-sans',
-      weights: [200, 400, 700],
-      provider: fontProviders.google(),
-    },
-  ],
+	fonts: [
+		{
+			name: 'IBM Plex Sans',
+			cssVariable: '--font-ibm-plex-sans',
+			weights: [200, 400, 700],
+			provider: fontProviders.google(),
+		},
+	],
 
-  vite: {
-    plugins: [tailwindcss()],
-  },
+	vite: {
+		plugins: [tailwindcss()],
+	},
 })

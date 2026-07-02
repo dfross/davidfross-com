@@ -13,21 +13,18 @@
 		"astro": "astro"
 	},
 	"dependencies": {
-		"astro": "^6.1.9",
+		"astro": "^7.0.6",
 		"astro-icon": "^1.1.5"
 	},
 	"devDependencies": {
-		"@astrojs/partytown": "^2.1.5",
-		"@astrojs/sitemap": "^3.7.1",
-		"@astrojs/check": "^0.9.8",
+		"@astrojs/check": "^0.9.9",
+		"@astrojs/partytown": "^2.1.7",
+		"@astrojs/sitemap": "^3.7.3",
 		"@tailwindcss/vite": "^4.2.4",
 		"prettier": "^3.8.2",
 		"prettier-plugin-astro": "^0.14.1",
-		"prettier-plugin-tailwindcss": "^0.7.2",
+		"prettier-plugin-tailwindcss": "^0.8.0",
 		"tailwindcss": "^4.2.4",
-		"typescript": "^5.9.3"
-	},
-	"overrides": {
-		"vite": "^7"
+		"typescript": "^6.0.3"
 	}
 }

@@ -15,6 +15,21 @@
 	text-transform: uppercase;
 }
 
+/* Focus ring — reusable keyboard focus indicator */
+.focus-ring:focus-visible {
+	outline: 2px solid #fff;
+	outline-offset: 2px;
+}
+
+/* Social icon link */
+.social-link {
+	transition: color 0.2s ease-out, transform 0.2s ease-out;
+}
+.social-link:hover {
+	scale: 1.1;
+	color: var(--color-neutral-400);
+}
+
 /* Skip link styles */
 .skip-link {
 	position: absolute;
@@ -40,7 +55,6 @@
 	*::before,
 	*::after {
 		animation: none !important;
-		animation-iteration-count: 1 !important;
 		transition: none !important;
 		scroll-behavior: auto !important;
 	}

@@ -4,10 +4,10 @@ import { Icon } from 'astro-icon/components'
 import { SOCIAL_LINKS } from '../constants'
 ---
 
-<MainLayout PAGE_TITLE="Hello. I am David Fross - Designer & Developer.">
+<MainLayout>
 	<h1 class="text-2xl">
 		<span class="block">Hello. I'm David Fross &mdash;</span>
-		<span class="text-display block pt-3 font-bold">designer &amp; developer.</span>
+		<span class="text-display block pt-3">designer &amp; developer.</span>
 	</h1>
 	<p class="mt-9 text-2xl font-extralight text-balance">
 		Designer and frontend developer focused on accessible, usable interfaces. Decades of frontend judgment, with AI in the workflow.
@@ -16,14 +16,14 @@ import { SOCIAL_LINKS } from '../constants'
 		<a
 			href={SOCIAL_LINKS.linkedin}
 			target="_blank"
-			rel="noopener noreferrer"
-			class="transition-all duration-200 ease-out hover:scale-110 hover:text-neutral-400 focus:outline-2 focus:outline-offset-2 focus:outline-white"
+			rel="noreferrer"
+			class="social-link focus-ring"
 			aria-label="Visit David Fross's LinkedIn profile (opens in new tab)">
 			<Icon name="linkedin" size="48" aria-hidden="true" />
 		</a>
 		<a
 			href={`mailto:${SOCIAL_LINKS.email}`}
-			class="transition-all duration-200 ease-out hover:scale-110 hover:text-neutral-400 focus:outline-2 focus:outline-offset-2 focus:outline-white"
+			class="social-link focus-ring"
 			aria-label="Send an email to David Fross">
 			<Icon name="mailbox" size="48" aria-hidden="true" />
 		</a>

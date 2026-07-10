@@ -3,7 +3,7 @@ import type { APIRoute } from 'astro'
 const getLlmsTxt = () => `# LLMs.txt for DavidFross.com
 
 ## About
-This is the personal website of David Fross, a designer and frontend developer.
+This is the personal website of [David Fross](https://www.davidfross.com/), a designer and frontend developer.
 The site serves as a concise professional landing page with contact information.
 David focuses on accessible, usable interfaces and brings decades of frontend judgment to AI-assisted workflows.
 
@@ -19,8 +19,8 @@ David focuses on accessible, usable interfaces and brings decades of frontend ju
 
 ## Contact
 For questions about this LLMs.txt or the use of site content:
-- Email: davidmfross@gmail.com
-- LinkedIn: https://www.linkedin.com/in/davidfross/
+- Email: [davidmfross@gmail.com](mailto:davidmfross@gmail.com)
+- LinkedIn: [David Fross on LinkedIn](https://www.linkedin.com/in/davidfross/)
 
 ## Technical Notes
 - This site is built with Astro and Tailwind CSS

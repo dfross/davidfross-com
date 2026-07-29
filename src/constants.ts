@@ -1,6 +1,6 @@
 export const SITE_TITLE = 'David Fross'
 export const SITE_DESCRIPTION =
-	'David Fross. Designer and frontend developer focused on accessible, usable interfaces. Decades of frontend judgment, with AI in the workflow.'
+	'David Fross. Building accessible digital products with a user-centered approach, seasoned judgment, and modern tooling.'
 
 export const AUTHOR_NAME = 'David Fross'
 export const AUTHOR_JOB_TITLE = 'Designer & Developer'

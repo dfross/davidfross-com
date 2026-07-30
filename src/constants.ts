@@ -1,6 +1,6 @@
 export const SITE_TITLE = 'David Fross'
 export const SITE_DESCRIPTION =
-	'David Fross. Building accessible digital products with a user-centered approach, seasoned judgment, and modern tooling.'
+	'David Fross. I partner with teams who need more than quick fixes. Someone who listens first, uncovers the real barriers, and aligns everyone around clarity, simplicity, and results.'
 
 export const AUTHOR_NAME = 'David Fross'
 export const AUTHOR_JOB_TITLE = 'Designer & Developer'

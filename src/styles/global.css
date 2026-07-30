@@ -13,6 +13,13 @@
 	font-weight: 700;
 	letter-spacing: -0.02em;
 	text-transform: uppercase;
+	display: block; /* or inline-block */
+	text-align: left;
+}
+
+/* Intro body text utility (fluid 18px -> 24px) */
+.text-intro {
+	font-size: clamp(1.125rem, 1.5vi + 0.75rem, 1.5rem);
 }
 
 /* Focus ring — reusable keyboard focus indicator */
@@ -23,7 +30,9 @@
 
 /* Social icon link */
 .social-link {
-	transition: color 0.2s ease-out, transform 0.2s ease-out;
+	transition:
+		color 0.2s ease-out,
+		transform 0.2s ease-out;
 }
 .social-link:hover {
 	scale: 1.1;

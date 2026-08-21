@@ -1,14 +1,8 @@
-<div id="particle-bg-container" class="fixed inset-0 -z-10 overflow-hidden pointer-events-none" aria-hidden="true">
+<div id="particle-bg-container" class="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
 	<canvas id="particle-bg-canvas" class="block h-full w-full"></canvas>
 </div>
 
 <script>
-	import * as THREE from 'three'
-	import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
-	import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js'
-	import { RenderPass } from 'three/addons/postprocessing/RenderPass.js'
-	import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
-
 	function initParticleBackground() {
 		const canvas = document.getElementById('particle-bg-canvas') as HTMLCanvasElement | null
 		if (!canvas) return
@@ -16,251 +10,244 @@
 		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 		if (prefersReducedMotion) return
 
-		// CONFIG - Calmed speed for subtle ambient background
-		const COUNT = 20000
-		const SPEED_MULT = 0.35
-		const AUTO_SPIN = false
-
-		// SETUP
-		const scene = new THREE.Scene()
-		scene.fog = new THREE.FogExp2(0x000000, 0.01)
-
-		const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000)
-		camera.position.set(0, 0, 100)
-
-		const renderer = new THREE.WebGLRenderer({
-			canvas,
-			antialias: true,
-			powerPreference: 'high-performance',
+		const gl = canvas.getContext('webgl', {
 			alpha: true,
+			antialias: false,
+			powerPreference: 'high-performance',
 		})
-		renderer.setSize(window.innerWidth, window.innerHeight)
-		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+		if (!gl) return
 
-		const controls = new OrbitControls(camera, renderer.domElement)
-		controls.enableDamping = true
-		controls.autoRotate = AUTO_SPIN
-		controls.autoRotateSpeed = 1.0
+		const vertexShaderSource = `
+			precision highp float;
+			attribute vec2 a_uv;
+			uniform float u_time;
+			uniform vec2 u_resolution;
+			uniform float u_pixelRatio;
 
-		// POST PROCESSING - Dimmed subtle bloom
-		const composer = new EffectComposer(renderer)
-		composer.addPass(new RenderPass(scene, camera))
-		const bloomPass = new UnrealBloomPass(
-			new THREE.Vector2(window.innerWidth, window.innerHeight),
-			1.5,
-			0.4,
-			0.85
-		)
-		bloomPass.strength = 0.25
-		bloomPass.radius = 0.3
-		bloomPass.threshold = 0.1
-		composer.addPass(bloomPass)
+			varying float v_intensity;
+			varying float v_alpha;
 
-		// SWARM OBJECTS
-		const dummy = new THREE.Object3D()
-		const color = new THREE.Color()
-		const target = new THREE.Vector3()
+			const float SCALE = 140.0;
+			const float FREQ = 1.2;
+			const float AMP = 6.0;
+			const float SPEED = 0.35 * 0.5;
+			const float WELLS = 2.0;
+			const float PULL = 6.0;
+			const float TWIST = 1.5;
 
-		// INSTANCED MESH - Dimmed low opacity white material
-		const geometry = new THREE.TetrahedronGeometry(0.25)
-		const material = new THREE.MeshBasicMaterial({
-			color: 0xffffff,
-			transparent: true,
-			opacity: 0.12,
-		})
+			void main() {
+				float t = u_time * SPEED;
 
-		const instancedMesh = new THREE.InstancedMesh(geometry, material, COUNT)
-		instancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage)
-		
-		// Rotate swarm on X-axis for a dramatic 3D perspective landscape view
-		instancedMesh.rotation.x = Math.PI * 0.35
-		scene.add(instancedMesh)
+				float w1x = sin(t * 0.3) * SCALE * 0.4;
+				float w1y = cos(t * 0.2) * SCALE * 0.4;
+				float w2x = sin(t * 0.5 + 2.0) * SCALE * 0.3;
+				float w2y = cos(t * 0.4 + 1.0) * SCALE * 0.3;
 
-		// CONTROL STUBS & INITIAL PARAMS
-		const PARAMS: Record<string, number> = {
-			scale: 140,
-			freq: 1.2,
-			amp: 6,
-			speed: 0.5,
-			wells: 2,
-			pull: 6,
-			twist: 1.5,
+				float x = (a_uv.x * 2.0 - 1.0) * SCALE;
+				float y = (a_uv.y * 2.0 - 1.0) * SCALE;
+
+				float wave = sin(x * 0.02 * FREQ + t) + sin(y * 0.02 * FREQ - t * 0.8);
+				float z = wave * AMP;
+
+				float dx1 = x - w1x;
+				float dy1 = y - w1y;
+				float d1 = sqrt(dx1 * dx1 + dy1 * dy1 + 4.0);
+
+				float dx2 = x - w2x;
+				float dy2 = y - w2y;
+				float d2 = sqrt(dx2 * dx2 + dy2 * dy2 + 4.0);
+
+				float bend1 = -PULL / d1;
+				float bend2 = -PULL / d2;
+
+				z += (bend1 + bend2) * (WELLS > 1.0 ? 1.0 : WELLS * 0.5);
+
+				float ang = TWIST * (bend1 - bend2);
+				float cosA = cos(ang);
+				float sinA = sin(ang);
+
+				float tx = x * cosA - y * sinA;
+				float ty = x * sinA + y * cosA;
+
+				// Gentle Z-axis drift rotation (0.03 * 0.35)
+				float rotZ = u_time * 0.0105;
+				float cosZ = cos(rotZ);
+				float sinZ = sin(rotZ);
+				float rx = tx * cosZ - ty * sinZ;
+				float ry = tx * sinZ + ty * cosZ;
+				float rz = z;
+
+				// 3D perspective pitch (Math.PI * 0.35)
+				float rotX = 1.0995574;
+				float cosX = cos(rotX);
+				float sinX = sin(rotX);
+				float px = rx;
+				float py = ry * cosX - rz * sinX;
+				float pz = ry * sinX + rz * cosX;
+
+				// Perspective Camera (FOV 60 deg, pos = (0, 0, 100))
+				float camZ = pz - 100.0;
+				float f = 1.7320508; // 1.0 / tan(30 deg)
+				float aspect = u_resolution.x / u_resolution.y;
+
+				float clipW = -camZ;
+				float clipX = px * (f / aspect);
+				float clipY = py * f;
+				float clipZ = ((camZ * 2000.1) + 400.0) / -1999.9;
+
+				gl_Position = vec4(clipX, clipY, clipZ, clipW);
+
+				// Depth intensity calculation
+				float depth = abs(z) / (AMP + 0.001);
+				v_intensity = 0.25 + 0.55 * (1.0 - min(1.0, depth));
+
+				// Point size scaling with perspective & pixel ratio
+				float pSize = (160.0 / clipW) * u_pixelRatio;
+				gl_PointSize = clamp(pSize, 1.0, 3.5 * u_pixelRatio);
+
+				// Soft distance fog
+				float dist = length(vec3(px, py, camZ));
+				v_alpha = clamp(1.0 - (dist / 220.0), 0.0, 1.0) * 0.35;
+			}
+		`
+
+		const fragmentShaderSource = `
+			precision highp float;
+			varying float v_intensity;
+			varying float v_alpha;
+
+			void main() {
+				vec2 coord = gl_PointCoord - vec2(0.5);
+				float dist = length(coord);
+				if (dist > 0.5) discard;
+
+				float edge = smoothstep(0.5, 0.15, dist);
+				gl_FragColor = vec4(vec3(v_intensity), v_alpha * edge);
+			}
+		`
+
+		function createShader(glCtx: WebGLRenderingContext, type: number, source: string) {
+			const shader = glCtx.createShader(type)
+			if (!shader) return null
+			glCtx.shaderSource(shader, source)
+			glCtx.compileShader(shader)
+			if (!glCtx.getShaderParameter(shader, glCtx.COMPILE_STATUS)) {
+				glCtx.deleteShader(shader)
+				return null
+			}
+			return shader
 		}
-		const addControl = (id: string, _label: string, _min: number, _max: number, val: number) => {
-			return PARAMS[id] !== undefined ? PARAMS[id] : val
+
+		const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource)
+		const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource)
+		if (!vertexShader || !fragmentShader) return
+
+		const program = gl.createProgram()
+		if (!program) return
+		gl.attachShader(program, vertexShader)
+		gl.attachShader(program, fragmentShader)
+		gl.linkProgram(program)
+		if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+			gl.deleteProgram(program)
+			return
 		}
-		const setInfo = (..._args: unknown[]) => {}
-		const annotate = (..._args: unknown[]) => {}
 
-		// PRE-COMPUTE INITIAL POSITIONS AT t = 0 SO THE SWARM STARTS FULLY EXPANDED
-		const initScale = addControl('scale', 'Fabric Size', 40, 260, 140.0)
-		const initFreq = addControl('freq', 'Wave Frequency', 0.5, 6, 1.2)
-		const initAmp = addControl('amp', 'Wave Amplitude', 0, 20, 6.0)
-		const initWells = addControl('wells', 'Gravity Wells', 0, 4, 2.0)
-		const initPull = addControl('pull', 'Well Strength', 0, 20, 6.0)
-		const initTwist = addControl('twist', 'Shear Twist', 0, 6, 1.5)
+		gl.useProgram(program)
 
-		const t0 = 0
-		const w1x0 = Math.sin(t0 * 0.3) * initScale * 0.4
-		const w1y0 = Math.cos(t0 * 0.2) * initScale * 0.4
-		const w2x0 = Math.sin(t0 * 0.5 + 2.0) * initScale * 0.3
-		const w2y0 = Math.cos(t0 * 0.4 + 1.0) * initScale * 0.3
-
-		const positions: THREE.Vector3[] = []
+		// Setup particle positions
+		const COUNT = 16000
+		const uvArray = new Float32Array(COUNT * 2)
 		for (let i = 0; i < COUNT; i++) {
-			const u = (Math.sin(i * 12.9898) * 43758.5453) % 1.0
-			const v = (Math.sin(i * 78.233) * 12345.6789) % 1.0
-
-			const x = (u * 2.0 - 1.0) * initScale
-			const y = (v * 2.0 - 1.0) * initScale
-
-			const wave = Math.sin(x * 0.02 * initFreq + t0) + Math.sin(y * 0.02 * initFreq - t0 * 0.8)
-			let z = wave * initAmp
-
-			const dx1 = x - w1x0
-			const dy1 = y - w1y0
-			const d1 = Math.sqrt(dx1 * dx1 + dy1 * dy1 + 4.0)
-
-			const dx2 = x - w2x0
-			const dy2 = y - w2y0
-			const d2 = Math.sqrt(dx2 * dx2 + dy2 * dy2 + 4.0)
-
-			const bend1 = -initPull / d1
-			const bend2 = -initPull / d2
-
-			z += (bend1 + bend2) * (initWells > 1.0 ? 1.0 : initWells * 0.5)
-
-			const ang = initTwist * (bend1 - bend2)
-			const cosA = Math.cos(ang)
-			const sinA = Math.sin(ang)
-
-			const tx = x * cosA - y * sinA
-			const ty = x * sinA + y * cosA
-
-			const initPos = new THREE.Vector3(tx, ty, z)
-			positions.push(initPos)
-
-			dummy.position.copy(initPos)
-			dummy.updateMatrix()
-			instancedMesh.setMatrixAt(i, dummy.matrix)
-
-			const depth = Math.abs(z) / (initAmp + 0.001)
-			const intensity = 0.15 + 0.35 * (1.0 - Math.min(1.0, depth))
-			color.setRGB(intensity, intensity, intensity)
-			instancedMesh.setColorAt(i, color)
+			// Deterministic pseudo-random distribution
+			const u = Math.abs(Math.sin((i + 1) * 12.9898) * 43758.5453) % 1.0
+			const v = Math.abs(Math.sin((i + 1) * 78.233) * 12345.6789) % 1.0
+			uvArray[i * 2] = u
+			uvArray[i * 2 + 1] = v
 		}
 
-		instancedMesh.instanceMatrix.needsUpdate = true
-		if (instancedMesh.instanceColor) {
-			instancedMesh.instanceColor.needsUpdate = true
+		const buffer = gl.createBuffer()
+		gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+		gl.bufferData(gl.ARRAY_BUFFER, uvArray, gl.STATIC_DRAW)
+
+		const aUvLoc = gl.getAttribLocation(program, 'a_uv')
+		gl.enableVertexAttribArray(aUvLoc)
+		gl.vertexAttribPointer(aUvLoc, 2, gl.FLOAT, false, 0, 0)
+
+		const uTimeLoc = gl.getUniformLocation(program, 'u_time')
+		const uResolutionLoc = gl.getUniformLocation(program, 'u_resolution')
+		const uPixelRatioLoc = gl.getUniformLocation(program, 'u_pixelRatio')
+
+		// WebGL states
+		gl.enable(gl.BLEND)
+		gl.blendFunc(gl.SRC_ALPHA, gl.ONE)
+		gl.disable(gl.DEPTH_TEST)
+
+		let width = 0
+		let height = 0
+		let pixelRatio = 1
+
+		function resize() {
+			if (!canvas || !gl) return
+			pixelRatio = Math.min(window.devicePixelRatio || 1, 2)
+			width = window.innerWidth
+			height = window.innerHeight
+
+			const displayWidth = Math.round(width * pixelRatio)
+			const displayHeight = Math.round(height * pixelRatio)
+
+			if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
+				canvas.width = displayWidth
+				canvas.height = displayHeight
+			}
+
+			gl.viewport(0, 0, displayWidth, displayHeight)
+			gl.uniform2f(uResolutionLoc, width, height)
+			gl.uniform1f(uPixelRatioLoc, pixelRatio)
 		}
 
-		// ANIMATION LOOP
+		resize()
+		window.addEventListener('resize', resize, { passive: true })
+
 		const startTime = performance.now()
+		let animationFrameId: number | null = null
+		let isVisible = true
 
-		function animate() {
-			requestAnimationFrame(animate)
-			const time = ((performance.now() - startTime) / 1000) * SPEED_MULT
+		function render() {
+			if (!gl || !isVisible) return
+			const elapsed = (performance.now() - startTime) / 1000
+			gl.uniform1f(uTimeLoc, elapsed)
 
-			const matWithUniforms = material as unknown as { uniforms?: Record<string, { value: unknown }> }
-			if (matWithUniforms.uniforms && matWithUniforms.uniforms.uTime) {
-				matWithUniforms.uniforms.uTime.value = time
-			}
+			gl.clearColor(0.0, 0.0, 0.0, 0.0)
+			gl.clear(gl.COLOR_BUFFER_BIT)
+			gl.drawArrays(gl.POINTS, 0, COUNT)
 
-			// Gentle slow background drift on Z-axis rotation
-			instancedMesh.rotation.z = time * 0.03
-
-			controls.update()
-
-			// SWARM LOGIC
-			const scale = addControl('scale', 'Fabric Size', 40, 260, 140.0)
-			const freq = addControl('freq', 'Wave Frequency', 0.5, 6, 1.2)
-			const amp = addControl('amp', 'Wave Amplitude', 0, 20, 6.0)
-			const speed = addControl('speed', 'Flow Speed', 0, 4, 0.5)
-			const wells = addControl('wells', 'Gravity Wells', 0, 4, 2.0)
-			const pull = addControl('pull', 'Well Strength', 0, 20, 6.0)
-			const twist = addControl('twist', 'Shear Twist', 0, 6, 1.5)
-
-			const t = time * speed
-			const w1x = Math.sin(t * 0.3) * scale * 0.4
-			const w1y = Math.cos(t * 0.2) * scale * 0.4
-			const w2x = Math.sin(t * 0.5 + 2.0) * scale * 0.3
-			const w2y = Math.cos(t * 0.4 + 1.0) * scale * 0.3
-
-			for (let i = 0; i < COUNT; i++) {
-				const u = (Math.sin(i * 12.9898) * 43758.5453) % 1.0
-				const v = (Math.sin(i * 78.233) * 12345.6789) % 1.0
-
-				const x = (u * 2.0 - 1.0) * scale
-				const y = (v * 2.0 - 1.0) * scale
-
-				const wave = Math.sin(x * 0.02 * freq + t) + Math.sin(y * 0.02 * freq - t * 0.8)
-				let z = wave * amp
-
-				const dx1 = x - w1x
-				const dy1 = y - w1y
-				const d1 = Math.sqrt(dx1 * dx1 + dy1 * dy1 + 4.0)
-
-				const dx2 = x - w2x
-				const dy2 = y - w2y
-				const d2 = Math.sqrt(dx2 * dx2 + dy2 * dy2 + 4.0)
-
-				const bend1 = -pull / d1
-				const bend2 = -pull / d2
-
-				z += (bend1 + bend2) * (wells > 1.0 ? 1.0 : wells * 0.5)
-
-				const ang = twist * (bend1 - bend2)
-				const cosA = Math.cos(ang)
-				const sinA = Math.sin(ang)
-
-				const tx = x * cosA - y * sinA
-				const ty = x * sinA + y * cosA
-
-				target.set(tx, ty, z)
-
-				// Subtle dimmed white grayscale depth variation
-				const depth = Math.abs(z) / (amp + 0.001)
-				const intensity = 0.15 + 0.35 * (1.0 - Math.min(1.0, depth))
-				color.setRGB(intensity, intensity, intensity)
-
-				if (i === 0) {
-					setInfo(
-						'Space-Time Fabric',
-						'A deforming grid of space with moving gravity wells bending the fabric and generating ripples.'
-					)
-					annotate('well1', new THREE.Vector3(w1x, w1y, -10), 'Gravity Well')
-				}
-
-				const pos = positions[i]
-				if (pos) {
-					pos.lerp(target, 0.1)
-					dummy.position.copy(pos)
-					dummy.updateMatrix()
-					instancedMesh.setMatrixAt(i, dummy.matrix)
-					instancedMesh.setColorAt(i, color)
-				}
-			}
-
-			instancedMesh.instanceMatrix.needsUpdate = true
-			if (instancedMesh.instanceColor) {
-				instancedMesh.instanceColor.needsUpdate = true
-			}
-
-			composer.render()
+			animationFrameId = requestAnimationFrame(render)
 		}
 
-		animate()
+		// Handle tab visibility to pause when inactive
+		document.addEventListener('visibilitychange', () => {
+			if (document.hidden) {
+				isVisible = false
+				if (animationFrameId !== null) {
+					cancelAnimationFrame(animationFrameId)
+					animationFrameId = null
+				}
+			} else {
+				isVisible = true
+				if (animationFrameId === null) {
+					animationFrameId = requestAnimationFrame(render)
+				}
+			}
+		})
 
-		const handleResize = () => {
-			camera.aspect = window.innerWidth / window.innerHeight
-			camera.updateProjectionMatrix()
-			renderer.setSize(window.innerWidth, window.innerHeight)
-			composer.setSize(window.innerWidth, window.innerHeight)
-		}
-
-		window.addEventListener('resize', handleResize)
+		animationFrameId = requestAnimationFrame(render)
 	}
 
-	initParticleBackground()
+	// Defer initialization to avoid competing with main thread initial paint
+	const win = window as unknown as Window & { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => void }
+	if (typeof win.requestIdleCallback === 'function') {
+		win.requestIdleCallback(() => initParticleBackground(), { timeout: 1500 })
+	} else {
+		window.addEventListener('load', () => initParticleBackground())
+	}
 </script>

@@ -1,10 +1,23 @@
-<script is:inline type="text/partytown" src="https://www.googletagmanager.com/gtag/js?id=G-2NMTBPYB0R"></script>
-<script is:inline type="text/partytown">
+<script is:inline>
 	window.dataLayer = window.dataLayer || []
 	function gtag() {
 		dataLayer.push(arguments)
 	}
 	gtag('js', new Date())
-
 	gtag('config', 'G-2NMTBPYB0R')
+
+	function loadGA() {
+		if (document.getElementById('ga-gtag')) return
+		const script = document.createElement('script')
+		script.id = 'ga-gtag'
+		script.async = true
+		script.src = 'https://www.googletagmanager.com/gtag/js?id=G-2NMTBPYB0R'
+		document.head.appendChild(script)
+	}
+
+	if ('requestIdleCallback' in window) {
+		requestIdleCallback(loadGA, { timeout: 3000 })
+	} else {
+		window.addEventListener('load', loadGA)
+	}
 </script>

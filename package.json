@@ -16,15 +16,12 @@
 	"dependencies": {
 		"astro": "^7.2.4",
 		"astro-icon": "^1.2.0",
-		"tailwindcss": "^4.2.4",
-		"three": "^0.185.1"
+		"tailwindcss": "^4.2.4"
 	},
 	"devDependencies": {
 		"@astrojs/check": "^0.9.9",
-		"@astrojs/partytown": "^2.1.7",
 		"@astrojs/sitemap": "^3.7.3",
 		"@tailwindcss/vite": "^4.2.4",
-		"@types/three": "^0.185.1",
 		"@typescript-eslint/parser": "^8.67.0",
 		"astro-eslint-parser": "^3.1.0",
 		"eslint": "^10.9.0",

@@ -15,8 +15,8 @@ export default defineConfig({
 
 	fonts: [
 		{
-			name: 'IBM Plex Sans',
-			cssVariable: '--font-ibm-plex-sans',
+			name: 'Geist',
+			cssVariable: '--font-geist',
 			weights: [200, 400, 700],
 			provider: fontProviders.google(),
 		},

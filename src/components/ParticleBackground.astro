@@ -3,6 +3,15 @@
 </div>
 
 <script>
+	const COUNT = 16000
+	const PRECALCULATED_UV = new Float32Array(COUNT * 2)
+	for (let i = 0; i < COUNT; i++) {
+		const u = Math.abs(Math.sin((i + 1) * 12.9898) * 43758.5453) % 1.0
+		const v = Math.abs(Math.sin((i + 1) * 78.233) * 12345.6789) % 1.0
+		PRECALCULATED_UV[i * 2] = u
+		PRECALCULATED_UV[i * 2 + 1] = v
+	}
+
 	function initParticleBackground() {
 		const canvas = document.getElementById('particle-bg-canvas') as HTMLCanvasElement | null
 		if (!canvas) return
@@ -155,19 +164,9 @@
 		gl.useProgram(program)
 
 		// Setup particle positions
-		const COUNT = 16000
-		const uvArray = new Float32Array(COUNT * 2)
-		for (let i = 0; i < COUNT; i++) {
-			// Deterministic pseudo-random distribution
-			const u = Math.abs(Math.sin((i + 1) * 12.9898) * 43758.5453) % 1.0
-			const v = Math.abs(Math.sin((i + 1) * 78.233) * 12345.6789) % 1.0
-			uvArray[i * 2] = u
-			uvArray[i * 2 + 1] = v
-		}
-
 		const buffer = gl.createBuffer()
 		gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-		gl.bufferData(gl.ARRAY_BUFFER, uvArray, gl.STATIC_DRAW)
+		gl.bufferData(gl.ARRAY_BUFFER, PRECALCULATED_UV, gl.STATIC_DRAW)
 
 		const aUvLoc = gl.getAttribLocation(program, 'a_uv')
 		gl.enableVertexAttribArray(aUvLoc)

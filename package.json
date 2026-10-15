@@ -11,7 +11,8 @@
 		"build": "astro check && astro build",
 		"lint": "eslint src",
 		"preview": "astro preview",
-		"astro": "astro"
+		"astro": "astro",
+		"test": "vitest run"
 	},
 	"dependencies": {
 		"astro": "^7.2.4",
@@ -30,7 +31,8 @@
 		"prettier": "^3.8.2",
 		"prettier-plugin-astro": "^0.14.1",
 		"prettier-plugin-tailwindcss": "^0.8.0",
-		"typescript": "^6.0.3"
+		"typescript": "^6.0.3",
+		"vitest": "^5.0.4"
 	},
 	"overrides": {
 		"eslint-plugin-jsx-a11y": {

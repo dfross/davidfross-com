@@ -42,7 +42,7 @@ const jsonLd = {
 		<link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
 		<Font cssVariable="--font-geist" preload />
 		<title>{SITE_TITLE} - {title}</title>
-		<script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+		<script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')} />
 		<GoogleAnalytics />
 	</head>
 	<body class="mx-auto flex min-h-dvh max-w-3xl flex-col bg-neutral-950 px-9 pt-9 text-neutral-200">

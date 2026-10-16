@@ -28,7 +28,7 @@ For questions about this LLMs.txt or the use of site content:
 - The site is built with accessibility best practices in mind
 
 ## Last Updated
-2026-04-08
+${new Date().toISOString().slice(0, 10)}
 `
 
 export const GET: APIRoute = () => {

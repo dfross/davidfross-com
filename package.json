@@ -17,12 +17,14 @@
 	"dependencies": {
 		"astro": "^7.2.4",
 		"astro-icon": "^1.2.0",
+		"serialize-javascript": "^7.1.2",
 		"tailwindcss": "^4.2.4"
 	},
 	"devDependencies": {
 		"@astrojs/check": "^0.9.9",
 		"@astrojs/sitemap": "^3.7.3",
 		"@tailwindcss/vite": "^4.2.4",
+		"@types/serialize-javascript": "^5.0.4",
 		"@typescript-eslint/parser": "^8.67.0",
 		"astro-eslint-parser": "^3.1.0",
 		"eslint": "^10.9.0",

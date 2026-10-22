@@ -17,7 +17,7 @@ const jsonLd = {
 	'@context': 'https://schema.org',
 	'@type': 'Person',
 	name: AUTHOR_NAME,
-	url: Astro.site?.toString() ?? 'https://www.davidfross.com/',
+	url: Astro.site?.toString() ?? Astro.url.origin ?? 'https://www.davidfross.com/',
 	jobTitle: AUTHOR_JOB_TITLE,
 	sameAs: [SOCIAL_LINKS.linkedin],
 	email: `mailto:${SOCIAL_LINKS.email}`,
@@ -32,7 +32,7 @@ const jsonLd = {
 		<meta name="description" content={SITE_DESCRIPTION} />
 		<meta name="author" content={AUTHOR_NAME} />
 		<meta name="theme-color" content="#171717" />
-		<link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+		<link rel="canonical" href={new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin)} />
 		<link rel="icon" href="/favicon.ico" sizes="any" />
 		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
 		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />

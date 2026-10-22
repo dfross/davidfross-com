@@ -210,8 +210,22 @@
 			gl.uniform1f(uPixelRatioLoc, pixelRatio)
 		}
 
+		function debounce<T extends (...args: any[]) => void>(func: T, wait: number): (...args: Parameters<T>) => void {
+			let timeout: ReturnType<typeof setTimeout> | null = null
+			return function (...args: Parameters<T>) {
+				if (timeout !== null) {
+					clearTimeout(timeout)
+				}
+				timeout = setTimeout(() => {
+					func(...args)
+				}, wait)
+			}
+		}
+
+		const debouncedResize = debounce(resize, 200)
+
 		resize()
-		window.addEventListener('resize', resize, { passive: true })
+		window.addEventListener('resize', debouncedResize, { passive: true })
 
 		const startTime = performance.now()
 		let animationFrameId: number | null = null

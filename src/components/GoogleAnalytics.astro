@@ -1,17 +1,18 @@
 <script is:inline>
+	const GA_ID = 'G-2NMTBPYB0R'
 	window.dataLayer = window.dataLayer || []
 	function gtag() {
 		dataLayer.push(arguments)
 	}
 	gtag('js', new Date())
-	gtag('config', 'G-2NMTBPYB0R')
+	gtag('config', GA_ID)
 
 	function loadGA() {
 		if (document.getElementById('ga-gtag')) return
 		const script = document.createElement('script')
 		script.id = 'ga-gtag'
 		script.async = true
-		script.src = 'https://www.googletagmanager.com/gtag/js?id=G-2NMTBPYB0R'
+		script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`
 		document.head.appendChild(script)
 	}
 

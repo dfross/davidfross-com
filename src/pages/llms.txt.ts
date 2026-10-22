@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro'
+import { SOCIAL_LINKS } from '../constants'
 
 const getLlmsTxt = () => `# LLMs.txt for DavidFross.com
 
@@ -19,8 +20,8 @@ David focuses on accessible, usable interfaces and brings decades of frontend ju
 
 ## Contact
 For questions about this LLMs.txt or the use of site content:
-- Email: [davidmfross@gmail.com](mailto:davidmfross@gmail.com)
-- LinkedIn: [David Fross on LinkedIn](https://www.linkedin.com/in/davidfross/)
+- Email: [${SOCIAL_LINKS.email}](mailto:${SOCIAL_LINKS.email})
+- LinkedIn: [David Fross on LinkedIn](${SOCIAL_LINKS.linkedin})
 
 ## Technical Notes
 - This site is built with Astro and Tailwind CSS

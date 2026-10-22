@@ -1,0 +1,258 @@
+export const COUNT = 16000
+const PRECALCULATED_UV = new Float32Array(COUNT * 2)
+for (let i = 0; i < COUNT; i++) {
+	const u = Math.abs(Math.sin((i + 1) * 12.9898) * 43758.5453) % 1.0
+	const v = Math.abs(Math.sin((i + 1) * 78.233) * 12345.6789) % 1.0
+	PRECALCULATED_UV[i * 2] = u
+	PRECALCULATED_UV[i * 2 + 1] = v
+}
+
+const VERTEX_SHADER_SOURCE = `
+		precision highp float;
+		attribute vec2 a_uv;
+		uniform float u_time;
+		uniform vec2 u_resolution;
+		uniform float u_pixelRatio;
+
+		varying float v_intensity;
+		varying float v_alpha;
+
+		const float SCALE = 140.0;
+		const float FREQ = 1.2;
+		const float AMP = 6.0;
+		const float SPEED = 0.35 * 0.5;
+		const float WELLS = 2.0;
+		const float PULL = 6.0;
+		const float TWIST = 1.5;
+
+		void main() {
+			float t = u_time * SPEED;
+
+			float w1x = sin(t * 0.3) * SCALE * 0.4;
+			float w1y = cos(t * 0.2) * SCALE * 0.4;
+			float w2x = sin(t * 0.5 + 2.0) * SCALE * 0.3;
+			float w2y = cos(t * 0.4 + 1.0) * SCALE * 0.3;
+
+			float x = (a_uv.x * 2.0 - 1.0) * SCALE;
+			float y = (a_uv.y * 2.0 - 1.0) * SCALE;
+
+			float wave = sin(x * 0.02 * FREQ + t) + sin(y * 0.02 * FREQ - t * 0.8);
+			float z = wave * AMP;
+
+			float dx1 = x - w1x;
+			float dy1 = y - w1y;
+			float d1 = sqrt(dx1 * dx1 + dy1 * dy1 + 4.0);
+
+			float dx2 = x - w2x;
+			float dy2 = y - w2y;
+			float d2 = sqrt(dx2 * dx2 + dy2 * dy2 + 4.0);
+
+			float bend1 = -PULL / d1;
+			float bend2 = -PULL / d2;
+
+			z += (bend1 + bend2) * (WELLS > 1.0 ? 1.0 : WELLS * 0.5);
+
+			float ang = TWIST * (bend1 - bend2);
+			float cosA = cos(ang);
+			float sinA = sin(ang);
+
+			float tx = x * cosA - y * sinA;
+			float ty = x * sinA + y * cosA;
+
+			// Gentle Z-axis drift rotation (0.03 * 0.35)
+			float rotZ = u_time * 0.0105;
+			float cosZ = cos(rotZ);
+			float sinZ = sin(rotZ);
+			float rx = tx * cosZ - ty * sinZ;
+			float ry = tx * sinZ + ty * cosZ;
+			float rz = z;
+
+			// 3D perspective pitch (Math.PI * 0.35)
+			float rotX = 1.0995574;
+			float cosX = cos(rotX);
+			float sinX = sin(rotX);
+			float px = rx;
+			float py = ry * cosX - rz * sinX;
+			float pz = ry * sinX + rz * cosX;
+
+			// Perspective Camera (FOV 60 deg, pos = (0, 0, 100))
+			float camZ = pz - 100.0;
+			float f = 1.7320508; // 1.0 / tan(30 deg)
+			float aspect = u_resolution.x / u_resolution.y;
+
+			float clipW = -camZ;
+			float clipX = px * (f / aspect);
+			float clipY = py * f;
+			float clipZ = ((camZ * 2000.1) + 400.0) / -1999.9;
+
+			gl_Position = vec4(clipX, clipY, clipZ, clipW);
+
+			// Depth intensity calculation
+			float depth = abs(z) / (AMP + 0.001);
+			v_intensity = 0.25 + 0.55 * (1.0 - min(1.0, depth));
+
+			// Point size scaling with perspective & pixel ratio
+			float pSize = (160.0 / clipW) * u_pixelRatio;
+			gl_PointSize = clamp(pSize, 1.0, 3.5 * u_pixelRatio);
+
+			// Soft distance fog
+			float dist = length(vec3(px, py, camZ));
+			v_alpha = clamp(1.0 - (dist / 220.0), 0.0, 1.0) * 0.35;
+		}
+	`
+
+const FRAGMENT_SHADER_SOURCE = `
+		precision highp float;
+		varying float v_intensity;
+		varying float v_alpha;
+
+		void main() {
+			vec2 coord = gl_PointCoord - vec2(0.5);
+			float dist = length(coord);
+			if (dist > 0.5) discard;
+
+			float edge = smoothstep(0.5, 0.15, dist);
+			gl_FragColor = vec4(vec3(v_intensity), v_alpha * edge);
+		}
+	`
+
+function createShader(glCtx: WebGLRenderingContext, type: number, source: string) {
+	const shader = glCtx.createShader(type)
+	if (!shader) return null
+	glCtx.shaderSource(shader, source)
+	glCtx.compileShader(shader)
+	if (!glCtx.getShaderParameter(shader, glCtx.COMPILE_STATUS)) {
+		glCtx.deleteShader(shader)
+		return null
+	}
+	return shader
+}
+
+function initWebGLProgram(glCtx: WebGLRenderingContext, vertexSource: string, fragmentSource: string) {
+	const vertexShader = createShader(glCtx, glCtx.VERTEX_SHADER, vertexSource)
+	const fragmentShader = createShader(glCtx, glCtx.FRAGMENT_SHADER, fragmentSource)
+	if (!vertexShader || !fragmentShader) return null
+
+	const program = glCtx.createProgram()
+	if (!program) return null
+	glCtx.attachShader(program, vertexShader)
+	glCtx.attachShader(program, fragmentShader)
+	glCtx.linkProgram(program)
+	if (!glCtx.getProgramParameter(program, glCtx.LINK_STATUS)) {
+		glCtx.deleteProgram(program)
+		return null
+	}
+	return program
+}
+
+export function initParticleBackground() {
+	const canvas = document.getElementById('particle-bg-canvas') as HTMLCanvasElement | null
+	if (!canvas) return
+
+	const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+	if (prefersReducedMotion) return
+
+	const gl = canvas.getContext('webgl', {
+		alpha: true,
+		antialias: false,
+		powerPreference: 'high-performance',
+	})
+	if (!gl) return
+
+	const program = initWebGLProgram(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE)
+	if (!program) return
+
+	gl.useProgram(program)
+
+	// Setup particle positions
+	const buffer = gl.createBuffer()
+	gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+	gl.bufferData(gl.ARRAY_BUFFER, PRECALCULATED_UV, gl.STATIC_DRAW)
+
+	const aUvLoc = gl.getAttribLocation(program, 'a_uv')
+	gl.enableVertexAttribArray(aUvLoc)
+	gl.vertexAttribPointer(aUvLoc, 2, gl.FLOAT, false, 0, 0)
+
+	const uTimeLoc = gl.getUniformLocation(program, 'u_time')
+	const uResolutionLoc = gl.getUniformLocation(program, 'u_resolution')
+	const uPixelRatioLoc = gl.getUniformLocation(program, 'u_pixelRatio')
+
+	// WebGL states
+	gl.enable(gl.BLEND)
+	gl.blendFunc(gl.SRC_ALPHA, gl.ONE)
+	gl.disable(gl.DEPTH_TEST)
+
+	let width = 0
+	let height = 0
+	let pixelRatio = 1
+
+	function resize() {
+		if (!canvas || !gl) return
+		pixelRatio = Math.min(window.devicePixelRatio || 1, 2)
+		width = window.innerWidth
+		height = window.innerHeight
+
+		const displayWidth = Math.round(width * pixelRatio)
+		const displayHeight = Math.round(height * pixelRatio)
+
+		if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
+			canvas.width = displayWidth
+			canvas.height = displayHeight
+		}
+
+		gl.viewport(0, 0, displayWidth, displayHeight)
+		gl.uniform2f(uResolutionLoc, width, height)
+		gl.uniform1f(uPixelRatioLoc, pixelRatio)
+	}
+
+	function debounce<T extends (...args: any[]) => void>(func: T, wait: number): (...args: Parameters<T>) => void {
+		let timeout: ReturnType<typeof setTimeout> | null = null
+		return function (...args: Parameters<T>) {
+			if (timeout !== null) {
+				clearTimeout(timeout)
+			}
+			timeout = setTimeout(() => {
+				func(...args)
+			}, wait)
+		}
+	}
+
+	const debouncedResize = debounce(resize, 200)
+
+	resize()
+	window.addEventListener('resize', debouncedResize, { passive: true })
+
+	const startTime = performance.now()
+	let animationFrameId: number | null = null
+	let isVisible = true
+
+	function render() {
+		if (!gl || !isVisible) return
+		const elapsed = (performance.now() - startTime) / 1000
+		gl.uniform1f(uTimeLoc, elapsed)
+
+		gl.clearColor(0.0, 0.0, 0.0, 0.0)
+		gl.clear(gl.COLOR_BUFFER_BIT)
+		gl.drawArrays(gl.POINTS, 0, COUNT)
+
+		animationFrameId = requestAnimationFrame(render)
+	}
+
+	// Handle tab visibility to pause when inactive
+	document.addEventListener('visibilitychange', () => {
+		if (document.hidden) {
+			isVisible = false
+			if (animationFrameId !== null) {
+				cancelAnimationFrame(animationFrameId)
+				animationFrameId = null
+			}
+		} else {
+			isVisible = true
+			if (animationFrameId === null) {
+				animationFrameId = requestAnimationFrame(render)
+			}
+		}
+	})
+
+	animationFrameId = requestAnimationFrame(render)
+}

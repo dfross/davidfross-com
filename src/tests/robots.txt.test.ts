@@ -10,7 +10,7 @@ describe('robots.txt APIRoute Endpoint', () => {
 		} as APIContext
 
 		// Call the GET function with the mock context
-		const response = await GET(mockContext) as Response
+		const response = (await GET(mockContext)) as Response
 
 		// Await the returned Response text content
 		const text = await response.text()

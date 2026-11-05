@@ -61,10 +61,10 @@ describe('GoogleAnalytics.astro script', () => {
 		document.head.appendChild(script)
 
 		expect(requestIdleCallbackMock).toHaveBeenCalledTimes(1)
-		expect(requestIdleCallbackMock.mock.calls[0][1]).toEqual({ timeout: 3000 })
+		expect(requestIdleCallbackMock.mock.calls[0]![1]).toEqual({ timeout: 3000 })
 
 		// Simulate the callback firing
-		const callback = requestIdleCallbackMock.mock.calls[0][0]
+		const callback = requestIdleCallbackMock.mock.calls[0]![0]
 		callback()
 
 		// Verify the GA script was injected
@@ -87,7 +87,7 @@ describe('GoogleAnalytics.astro script', () => {
 		expect(addEventListenerSpy).toHaveBeenCalledWith('load', expect.any(Function))
 
 		// Simulate the load event
-		const loadHandler = addEventListenerSpy.mock.calls.find(call => call[0] === 'load')![1] as EventListener
+		const loadHandler = addEventListenerSpy.mock.calls.find((call) => call[0] === 'load')![1] as EventListener
 		loadHandler(new window.Event('load'))
 
 		// Verify the GA script was injected
@@ -106,7 +106,7 @@ describe('GoogleAnalytics.astro script', () => {
 		document.head.appendChild(script)
 
 		// Simulate callback firing twice
-		const callback = requestIdleCallbackMock.mock.calls[0][0]
+		const callback = requestIdleCallbackMock.mock.calls[0]![0]
 		callback()
 		callback()
 

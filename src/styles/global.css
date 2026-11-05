@@ -2,8 +2,8 @@
 
 @theme {
 	--font-sans:
-		var(--font-geist, 'Geist'), ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-		'Segoe UI Symbol', 'Noto Color Emoji';
+		var(--font-geist, 'Geist'), ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+		'Noto Color Emoji';
 }
 
 /* Display heading utility */
@@ -36,7 +36,7 @@
 }
 .social-link:hover {
 	scale: 1.1;
-	color: var(--color-neutral-400);
+	color: #fff;
 }
 
 /* Skip link styles */
@@ -44,12 +44,13 @@
 	position: absolute;
 	top: -40px;
 	left: 6px;
-	background: #000;
+	background: #232323;
 	color: #fff;
 	padding: 8px;
 	text-decoration: none;
 	z-index: 1000;
 	border-radius: 4px;
+	border: 1px solid #333333;
 	transition: top 0.3s;
 }
 .skip-link:focus-visible {

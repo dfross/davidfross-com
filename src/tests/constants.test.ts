@@ -1,11 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import {
-	SITE_TITLE,
-	SITE_DESCRIPTION,
-	AUTHOR_NAME,
-	AUTHOR_JOB_TITLE,
-	SOCIAL_LINKS,
-} from '../constants'
+import { SITE_TITLE, SITE_DESCRIPTION, AUTHOR_NAME, AUTHOR_JOB_TITLE, SOCIAL_LINKS } from '../constants'
 
 describe('Constants', () => {
 	it('exports the correct SITE_TITLE', () => {

@@ -31,7 +31,7 @@ const jsonLd = {
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="description" content={SITE_DESCRIPTION} />
 		<meta name="author" content={AUTHOR_NAME} />
-		<meta name="theme-color" content="#232323" />
+		<meta name="theme-color" content="#181817" />
 		<link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
 		<link rel="icon" href="/favicon.ico" sizes="any" />
 		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
@@ -46,14 +46,14 @@ const jsonLd = {
 		<script is:inline type="application/ld+json" set:html={serialize(jsonLd, { isJSON: true })} />
 		<GoogleAnalytics />
 	</head>
-	<body class="mx-auto flex min-h-dvh max-w-3xl flex-col bg-[#232323] px-9 pt-9 text-[#e3e3e3]">
+	<body class="bg-bg text-cream mx-auto flex min-h-dvh max-w-3xl flex-col px-9 pt-9">
 		<ParticleBackground />
 		<a href="#main-content" class="skip-link">Skip to main content</a>
-		<main id="main-content" class="flex grow flex-col justify-center gap-9">
+		<main id="main-content" tabindex="-1" class="flex grow flex-col justify-center gap-9 focus:outline-none">
 			<slot />
 		</main>
 		<footer>
-			<p class="py-9 text-sm text-balance text-neutral-400">&copy; {currentYear} David Fross. All rights reserved.</p>
+			<p class="text-muted py-9 text-sm text-balance">&copy; {currentYear} David Fross. All rights reserved.</p>
 		</footer>
 	</body>
 </html>

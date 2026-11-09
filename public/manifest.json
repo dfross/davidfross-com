@@ -4,8 +4,8 @@
 	"description": "Designer and developer of digital products and websites that are accessible, a joy to use, and perform exceedingly well.",
 	"start_url": "/",
 	"display": "standalone",
-	"background_color": "#171717",
-	"theme_color": "#171717",
+	"background_color": "#181817",
+	"theme_color": "#181817",
 	"icons": [
 		{
 			"src": "/favicon-16x16.png",

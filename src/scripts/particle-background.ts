@@ -16,14 +16,21 @@ const VERTEX_SHADER_SOURCE = `
 
 		varying float v_intensity;
 		varying float v_alpha;
+		varying vec3 v_color;
 
-		const float SCALE = 140.0;
+		const float SCALE = 165.0;
 		const float FREQ = 1.2;
-		const float AMP = 6.0;
+		const float AMP = 7.5;
 		const float SPEED = 0.35 * 0.5;
 		const float WELLS = 2.0;
 		const float PULL = 6.0;
 		const float TWIST = 1.5;
+
+		const vec3 COLOR_CREAM = vec3(0.882, 0.855, 0.804); // #e1dacd
+		const vec3 COLOR_TAN = vec3(0.808, 0.698, 0.533);   // #ceb288
+		const vec3 COLOR_BLUE = vec3(0.420, 0.627, 0.761);  // #6ba0c2
+		const vec3 COLOR_GREEN = vec3(0.302, 0.522, 0.384); // #4d8562
+		const vec3 COLOR_RED = vec3(0.969, 0.333, 0.275);   // #f75546
 
 		void main() {
 			float t = u_time * SPEED;
@@ -89,15 +96,25 @@ const VERTEX_SHADER_SOURCE = `
 
 			// Depth intensity calculation
 			float depth = abs(z) / (AMP + 0.001);
-			v_intensity = 0.25 + 0.55 * (1.0 - min(1.0, depth));
+			v_intensity = 0.32 + 0.58 * (1.0 - min(1.0, depth));
+
+			// Palette color blending across wave and gravity wells
+			float waveBlend = clamp(wave * 0.25 + 0.5, 0.0, 1.0);
+			vec3 baseColor = mix(COLOR_TAN, COLOR_CREAM, waveBlend);
+			baseColor = mix(baseColor, COLOR_BLUE, clamp(a_uv.x * 0.65 + (1.0 - waveBlend) * 0.35, 0.0, 1.0) * 0.55);
+			float well1Glow = clamp(-bend1 * 0.45, 0.0, 1.0);
+			float well2Glow = clamp(-bend2 * 0.45, 0.0, 1.0);
+			baseColor = mix(baseColor, COLOR_RED, well1Glow * 0.6);
+			baseColor = mix(baseColor, COLOR_GREEN, well2Glow * 0.6);
+			v_color = baseColor;
 
 			// Point size scaling with perspective & pixel ratio
-			float pSize = (160.0 / clipW) * u_pixelRatio;
-			gl_PointSize = clamp(pSize, 1.0, 3.5 * u_pixelRatio);
+			float pSize = (260.0 / clipW) * u_pixelRatio;
+			gl_PointSize = clamp(pSize, 1.5 * u_pixelRatio, 5.5 * u_pixelRatio);
 
 			// Soft distance fog
 			float dist = length(vec3(px, py, camZ));
-			v_alpha = clamp(1.0 - (dist / 220.0), 0.0, 1.0) * 0.35;
+			v_alpha = clamp(1.0 - (dist / 250.0), 0.0, 1.0) * 0.44;
 		}
 	`
 
@@ -105,14 +122,15 @@ const FRAGMENT_SHADER_SOURCE = `
 		precision highp float;
 		varying float v_intensity;
 		varying float v_alpha;
+		varying vec3 v_color;
 
 		void main() {
 			vec2 coord = gl_PointCoord - vec2(0.5);
 			float dist = length(coord);
 			if (dist > 0.5) discard;
 
-			float edge = smoothstep(0.5, 0.15, dist);
-			gl_FragColor = vec4(vec3(v_intensity), v_alpha * edge);
+			float edge = smoothstep(0.5, 0.12, dist);
+			gl_FragColor = vec4(v_color * v_intensity, v_alpha * edge);
 		}
 	`
 

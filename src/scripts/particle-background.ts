@@ -1,4 +1,4 @@
-export const COUNT = 16000
+const COUNT = 16000
 const PRECALCULATED_UV = new Float32Array(COUNT * 2)
 for (let i = 0; i < COUNT; i++) {
 	const u = Math.abs(Math.sin((i + 1) * 12.9898) * 43758.5453) % 1.0

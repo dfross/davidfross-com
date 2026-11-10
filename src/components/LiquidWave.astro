@@ -1,0 +1,83 @@
+---
+import { LIQUID_WAVE_PALETTE } from '../scripts/liquid-wave'
+
+export interface Props {
+	colors?: readonly string[]
+	color1?: string
+	color2?: string
+	color3?: string
+	mouseForce?: number
+	cursorSize?: number
+	isViscous?: boolean
+	viscous?: number
+	iterationsViscous?: number
+	iterationsPoisson?: number
+	dt?: number
+	BFECC?: boolean
+	resolution?: number
+	isBounce?: boolean
+	autoDemo?: boolean
+	autoSpeed?: number
+	autoIntensity?: number
+	class?: string
+}
+
+const {
+	colors = LIQUID_WAVE_PALETTE,
+	color1,
+	color2,
+	color3,
+	mouseForce = 20,
+	cursorSize = 100,
+	isViscous = false,
+	viscous = 30,
+	iterationsViscous = 32,
+	iterationsPoisson = 32,
+	dt = 0.014,
+	BFECC = true,
+	resolution = 0.5,
+	isBounce = false,
+	autoDemo = true,
+	autoSpeed = 0.5,
+	autoIntensity = 2.2,
+	class: className,
+} = Astro.props
+
+const resolvedColors = [color1, color2, color3].filter(Boolean) as string[]
+const paletteJson = JSON.stringify(resolvedColors.length > 0 ? resolvedColors : colors)
+---
+
+<div id="liquid-wave-container" class:list={['pointer-events-none fixed inset-0 -z-10 overflow-hidden', className]} aria-hidden="true">
+	<canvas
+		id="liquid-wave-canvas"
+		class="block h-full w-full"
+		data-colors={paletteJson}
+		data-color1={color1}
+		data-color2={color2}
+		data-color3={color3}
+		data-mouse-force={mouseForce}
+		data-cursor-size={cursorSize}
+		data-is-viscous={String(isViscous)}
+		data-viscous={viscous}
+		data-iterations-viscous={iterationsViscous}
+		data-iterations-poisson={iterationsPoisson}
+		data-dt={dt}
+		data-bfecc={String(BFECC)}
+		data-resolution={resolution}
+		data-is-bounce={String(isBounce)}
+		data-auto-demo={String(autoDemo)}
+		data-auto-speed={autoSpeed}
+		data-auto-intensity={autoIntensity}></canvas>
+</div>
+
+<script>
+	import { initLiquidWave } from '../scripts/liquid-wave'
+
+	// Defer initialization to avoid competing with main thread initial paint
+	const win = window as unknown as Window & { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => void }
+	if (typeof win.requestIdleCallback === 'function') {
+		win.requestIdleCallback(() => initLiquidWave(), { timeout: 1500 })
+	} else {
+		window.addEventListener('load', () => initLiquidWave())
+	}
+</script>

@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { initParticleBackground } from '../scripts/particle-background'
+import { initLiquidWave, LIQUID_WAVE_PALETTE, parseColorToRgb, buildPaletteData } from '../scripts/liquid-wave'
 
-describe('ParticleBackground', () => {
+describe('LiquidWave', () => {
 	let mockCanvas: HTMLCanvasElement
 	let mockGetContext: ReturnType<typeof vi.fn>
 
 	beforeEach(() => {
 		mockGetContext = vi.fn()
 		mockCanvas = document.createElement('canvas')
-		mockCanvas.id = 'particle-bg-canvas'
+		mockCanvas.id = 'liquid-wave-canvas'
 		mockCanvas.getContext = mockGetContext as any
 
 		document.body.appendChild(mockCanvas)
@@ -35,8 +35,7 @@ describe('ParticleBackground', () => {
 	})
 
 	it('initializes WebGL when prefers-reduced-motion is false', () => {
-		// Default mock matches: false
-		initParticleBackground()
+		initLiquidWave()
 
 		expect(window.matchMedia).toHaveBeenCalledWith('(prefers-reduced-motion: reduce)')
 		expect(mockGetContext).toHaveBeenCalledWith('webgl', {
@@ -47,7 +46,6 @@ describe('ParticleBackground', () => {
 	})
 
 	it('returns early and does not initialize WebGL when prefers-reduced-motion is true', () => {
-		// Mock matches: true
 		Object.defineProperty(window, 'matchMedia', {
 			writable: true,
 			value: vi.fn().mockImplementation((query) => ({
@@ -62,19 +60,30 @@ describe('ParticleBackground', () => {
 			})),
 		})
 
-		initParticleBackground()
+		initLiquidWave()
 
 		expect(window.matchMedia).toHaveBeenCalledWith('(prefers-reduced-motion: reduce)')
 		expect(mockGetContext).not.toHaveBeenCalled()
 	})
 
 	it('returns early if canvas element is not found', () => {
-		// Remove the canvas element
 		document.body.innerHTML = ''
 
-		initParticleBackground()
+		initLiquidWave()
 
 		expect(window.matchMedia).not.toHaveBeenCalled()
 		expect(mockGetContext).not.toHaveBeenCalled()
+	})
+
+	it('parses LexisNexis palette hex colors and builds a smooth RGBA palette texture', () => {
+		expect(parseColorToRgb('#f75546')).toEqual([247, 85, 70])
+		expect(parseColorToRgb('#3f6c50')).toEqual([63, 108, 80])
+
+		const data = buildPaletteData(LIQUID_WAVE_PALETTE, 16)
+		expect(data.length).toBe(16 * 4)
+		// First texel matches first stop (#232321)
+		expect([data[0], data[1], data[2], data[3]]).toEqual([35, 35, 33, 255])
+		// Last texel matches last stop (#f75546)
+		expect([data[15 * 4], data[15 * 4 + 1], data[15 * 4 + 2], data[15 * 4 + 3]]).toEqual([247, 85, 70, 255])
 	})
 })

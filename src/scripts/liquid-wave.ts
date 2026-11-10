@@ -1,10 +1,10 @@
 export const LIQUID_WAVE_PALETTE = [
-	'#232321', // --color-surface: deep terminal charcoal (outer edge)
-	'#3f6c50', // --color-green: deep terminal phosphor green (low-velocity wake)
+	'#3f6c50', // --color-green: deep terminal phosphor green (outer wake)
 	'#4f7e9b', // --color-blue: LexisNexis steel blue (wave body)
-	'#6ba0c2', // --color-blue-light: slate blue (mid-wave flow)
-	'#ceb288', // --color-tan: warm vintage amber/tan (inner wave crest)
-	'#f75546', // --color-red: terminal red (high-velocity peak accent)
+	'#6ba0c2', // --color-blue-light: luminous slate blue (mid-wave flow)
+	'#a89f91', // --color-muted: warm stone transition
+	'#f75546', // --color-red: vibrant terminal red (high-velocity crest)
+	'#ceb288', // --color-tan: warm vintage amber/tan (core highlight, softer than cream)
 ] as const
 
 export interface LiquidWaveOptions {
@@ -115,11 +115,11 @@ const COLOR_FRAG = `
 	void main() {
 		vec2 vel = texture2D(velocity, uv).xy;
 		float rawLen = length(vel);
-		// Soft-shoulder tone mapping prevents high-velocity mouse swipes from blowing out
-		float lenv = clamp(rawLen / (1.0 + rawLen * 0.85), 0.0, 1.0);
-		vec3 c = texture2D(palette, vec2(lenv, 0.5)).rgb * 0.78;
+		// Gentle knee at the top end so the full palette shows without harsh white-hot clipping
+		float lenv = clamp(rawLen / (1.0 + rawLen * 0.22), 0.0, 1.0);
+		vec3 c = texture2D(palette, vec2(lenv, 0.5)).rgb * 0.9;
 		vec3 outRGB = mix(bgColor.rgb, c, lenv);
-		float outA = mix(bgColor.a, 0.38, lenv);
+		float outA = mix(bgColor.a, 0.56, lenv);
 		gl_FragColor = vec4(outRGB, outA);
 	}
 `

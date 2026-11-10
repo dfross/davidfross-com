@@ -81,9 +81,9 @@ describe('LiquidWave', () => {
 
 		const data = buildPaletteData(LIQUID_WAVE_PALETTE, 16)
 		expect(data.length).toBe(16 * 4)
-		// First texel matches first stop (#232321)
-		expect([data[0], data[1], data[2], data[3]]).toEqual([35, 35, 33, 255])
-		// Last texel matches last stop (#f75546)
-		expect([data[15 * 4], data[15 * 4 + 1], data[15 * 4 + 2], data[15 * 4 + 3]]).toEqual([247, 85, 70, 255])
+		// First texel matches first stop (#3f6c50)
+		expect([data[0], data[1], data[2], data[3]]).toEqual([63, 108, 80, 255])
+		// Last texel matches last stop (#ceb288)
+		expect([data[15 * 4], data[15 * 4 + 1], data[15 * 4 + 2], data[15 * 4 + 3]]).toEqual([206, 178, 136, 255])
 	})
 })

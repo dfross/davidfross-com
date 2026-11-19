@@ -175,4 +175,25 @@
 			scale: 0.97;
 		}
 	}
+
+	/* Footer layout — container query prevents reflow when toggle label length changes */
+	.site-footer {
+		container: footer / inline-size;
+	}
+
+	.site-footer-inner {
+		display: flex;
+		flex-direction: column;
+		align-items: start;
+		gap: 0.5rem 1.5rem;
+	}
+
+	@container footer (inline-size >= 30em) {
+		.site-footer-inner {
+			flex-direction: row;
+			flex-wrap: wrap;
+			align-items: center;
+			justify-content: space-between;
+		}
+	}
 }

@@ -8,10 +8,14 @@ import { SITE_TITLE, SITE_DESCRIPTION, AUTHOR_NAME, AUTHOR_JOB_TITLE, SOCIAL_LIN
 
 interface Props {
 	title?: string
+	description?: string
+	noindex?: boolean
 }
 
-const { title = 'Designer & Developer' } = Astro.props
+const { title, description = SITE_DESCRIPTION, noindex = false } = Astro.props
+const pageTitle = title ? `${title} | ${SITE_TITLE}` : `${SITE_TITLE} - ${AUTHOR_JOB_TITLE}`
 const currentYear = new Date().getFullYear()
+const copyrightNotice = `© ${currentYear} David Fross. All rights reserved.`
 
 const jsonLd = {
 	'@context': 'https://schema.org',
@@ -29,33 +33,35 @@ const jsonLd = {
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<meta name="description" content={SITE_DESCRIPTION} />
+		<meta name="color-scheme" content="dark" />
+		<meta name="text-scale" content="scale" />
+		<meta name="referrer" content="strict-origin-when-cross-origin" />
+		<meta name="description" content={description} />
 		<meta name="author" content={AUTHOR_NAME} />
 		<meta name="theme-color" content="#181817" />
-		<link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+		{noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />}
 		<link rel="icon" href="/favicon.ico" sizes="any" />
 		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
 		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
 		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 		<link rel="manifest" href="/manifest.json" />
 		<link rel="sitemap" href="/sitemap-index.xml" />
-		<link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-		<link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
 		<Font cssVariable="--font-geist" preload />
-		<title>{SITE_TITLE} - {title}</title>
+		<link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+		<title>{pageTitle}</title>
 		<script is:inline type="application/ld+json" set:html={serialize(jsonLd, { isJSON: true })} />
-		<GoogleAnalytics />
 	</head>
-	<body class="bg-bg text-cream mx-auto flex min-h-dvh max-w-3xl flex-col px-9 pt-9">
+	<body class="bg-bg text-cream mx-auto flex min-h-dvh max-w-3xl flex-col px-6 pt-9 sm:px-9">
 		<LiquidWave />
-		<a href="#main-content" class="skip-link">
-			Skip to main content
-		</a>
-		<main id="main-content" tabindex="-1" class="flex grow flex-col justify-center gap-9 focus:outline-none">
+		<main id="main-content" class="flex grow flex-col justify-center gap-9">
 			<slot />
 		</main>
-		<footer>
-			<p class="text-muted py-9 text-sm text-balance">&copy;{currentYear}David Fross. All rights reserved.</p>
+		<footer class="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-9">
+			<p class="text-muted text-sm text-pretty">{copyrightNotice}</p>
+			<button type="button" id="liquid-wave-toggle" class="wave-toggle focus-ring" hidden>
+				Pause background
+			</button>
 		</footer>
+		<GoogleAnalytics />
 	</body>
 </html>

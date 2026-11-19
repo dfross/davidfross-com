@@ -25,5 +25,6 @@ describe('robots.txt APIRoute Endpoint', () => {
 
 		// Check basic Response properties if needed
 		expect(response.status).toBe(200)
+		expect(response.headers.get('Content-Type')).toContain('text/plain')
 	})
 })

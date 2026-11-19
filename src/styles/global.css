@@ -18,77 +18,161 @@
 	--color-green: #3f6c50;
 }
 
-:root {
-	color-scheme: dark;
+@layer base {
+	:root {
+		color-scheme: dark;
+		--target-size: 24px;
+		@media (pointer: coarse) {
+			--target-size: 44px;
+		}
+	}
+
+	body {
+		overflow-wrap: break-word;
+	}
+
+	::selection {
+		background-color: var(--color-blue-light);
+		color: var(--color-bg);
+	}
+
+	@media (forced-colors: active) {
+		#liquid-wave-container {
+			display: none;
+		}
+	}
 }
 
-::selection {
-	background-color: var(--color-blue);
-	color: var(--color-cream);
-}
+@layer components {
+	/* Subtle center scrim keeps text, icons, and focus rings compliant over peak wave crests */
+	#liquid-wave-container::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: radial-gradient(
+			ellipse 56rem 130% at 50% 50%,
+			color-mix(in oklab, var(--color-bg) 66%, transparent) 0%,
+			color-mix(in oklab, var(--color-bg) 66%, transparent) 55%,
+			color-mix(in oklab, var(--color-bg) 20%, transparent) 85%,
+			transparent 100%
+		);
+	}
 
-/* Display heading utility */
-.text-display {
-	font-size: clamp(3.05rem, 6.06vi + 1.54rem, 6.39rem);
-	line-height: 1;
-	font-weight: 700;
-	letter-spacing: -0.02em;
-	text-transform: uppercase;
-	display: block; /* or inline-block */
-	text-align: left;
-}
+	/* Display heading utility */
+	.text-display {
+		font-size: clamp(2.4rem, 6.8vi + 1.05rem, 6rem);
+		line-height: 1;
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		text-transform: uppercase;
+		display: block;
+		text-align: start;
+	}
 
-/* Intro body text utility (fluid 18px -> 24px) */
-.text-intro {
-	font-size: clamp(1.125rem, 1.5vi + 0.75rem, 1.5rem);
-}
+	/* Intro body text utility (fluid 18px -> 24px) */
+	.text-intro {
+		font-size: clamp(1.125rem, 1.5vi + 0.75rem, 1.5rem);
+	}
 
-/* Focus ring — reusable keyboard focus indicator */
-.focus-ring:focus-visible {
-	outline: 2px solid var(--color-red);
-	outline-offset: 2px;
-}
+	/* Focus ring — reusable keyboard focus indicator */
+	.focus-ring:focus-visible {
+		outline: 2px solid var(--color-red);
+		outline-offset: 2px;
+	}
 
-/* Social icon link */
-.social-link {
-	color: var(--color-tan);
-	transition:
-		color 0.2s ease-out,
-		transform 0.2s ease-out;
-}
-.social-link:hover {
-	scale: 1.1;
-	color: var(--color-blue-light);
-}
+	/* Social icon link */
+	.social-link {
+		color: var(--color-tan);
+		scale: 1;
+		transition: color 0.2s ease-out;
+		@media (prefers-reduced-motion: no-preference) {
+			transition:
+				color 0.2s ease-out,
+				scale 0.2s ease-out;
+		}
+	}
 
-/* Skip link styles */
-.skip-link {
-	position: absolute;
-	top: 6px;
-	left: 6px;
-	transform: translateY(-200%);
-	background: var(--color-surface);
-	color: var(--color-cream);
-	padding: 8px;
-	text-decoration: none;
-	z-index: 1000;
-	border-radius: 4px;
-	border: 1px solid var(--color-chassis);
-	transition: transform 0.3s;
-}
-.skip-link:focus-visible {
-	transform: translateY(0);
-	outline: 2px solid var(--color-red);
-	outline-offset: 2px;
-}
+	@media (hover: hover) {
+		.social-link:hover {
+			color: var(--color-blue-light);
+			@media (prefers-reduced-motion: no-preference) {
+				scale: 1.1;
+			}
+		}
+	}
 
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-	*,
-	*::before,
-	*::after {
-		animation: none !important;
-		transition: none !important;
-		scroll-behavior: auto !important;
+	.social-link:active {
+		color: var(--color-cream);
+		@media (prefers-reduced-motion: no-preference) {
+			scale: 0.96;
+		}
+	}
+
+	/* WebGL background pause/play control */
+	.wave-toggle {
+		color: var(--color-muted);
+		font-size: var(--text-sm);
+		line-height: var(--text-sm--line-height);
+		text-decoration: underline;
+		text-underline-offset: 4px;
+		cursor: pointer;
+		min-block-size: var(--target-size);
+		min-inline-size: var(--target-size);
+		scale: 1;
+		transition: color 0.2s ease-out;
+		@media (prefers-reduced-motion: no-preference) {
+			transition:
+				color 0.2s ease-out,
+				scale 0.2s ease-out;
+		}
+	}
+
+	.wave-toggle:not([hidden]) {
+		display: inline-flex;
+		align-items: center;
+	}
+
+	@media (hover: hover) {
+		.wave-toggle:hover {
+			color: var(--color-cream);
+		}
+	}
+
+	.wave-toggle:active {
+		color: var(--color-tan);
+		@media (prefers-reduced-motion: no-preference) {
+			scale: 0.97;
+		}
+	}
+
+	/* 404 return home link */
+	.return-link {
+		color: var(--color-tan);
+		text-decoration: underline;
+		text-underline-offset: 4px;
+		display: inline-flex;
+		align-items: center;
+		min-block-size: var(--target-size);
+		min-inline-size: var(--target-size);
+		scale: 1;
+		transition: color 0.2s ease-out;
+		@media (prefers-reduced-motion: no-preference) {
+			transition:
+				color 0.2s ease-out,
+				scale 0.2s ease-out;
+		}
+	}
+
+	@media (hover: hover) {
+		.return-link:hover {
+			color: var(--color-blue-light);
+		}
+	}
+
+	.return-link:active {
+		color: var(--color-cream);
+		@media (prefers-reduced-motion: no-preference) {
+			scale: 0.97;
+		}
 	}
 }

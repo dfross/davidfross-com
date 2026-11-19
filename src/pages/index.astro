@@ -5,15 +5,19 @@ import { SOCIAL_LINKS } from '../constants'
 ---
 
 <MainLayout>
-	<h1 class="text-cream flex flex-col gap-3 text-2xl">
+	<h1 class="text-cream flex flex-col gap-3 text-2xl text-balance">
 		<span>David Fross,</span>
-		<span class="text-display">designer <span class="text-tan font-normal">&amp;</span> developer.</span>
+		<span class="text-display">
+			{'designer '}
+			<span class="text-tan font-normal">&amp;</span>
+			{' developer.'}
+		</span>
 	</h1>
-	<p class="text-intro text-cream font-extralight text-balance">
+	<p class="text-intro text-cream font-extralight text-pretty">
 		I bring 20+ years of frontend experience to teams building for the long term. I listen first to understand what needs solving, then
 		bring people together around clean and accessible code.
 	</p>
-	<nav aria-label="Social links" class="flex gap-6">
+	<nav aria-label="Social" class="flex flex-wrap gap-6">
 		<a
 			href={SOCIAL_LINKS.linkedin}
 			target="_blank"

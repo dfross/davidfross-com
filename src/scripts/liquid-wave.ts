@@ -292,7 +292,6 @@ export function buildPaletteData(stops: readonly string[], width = 256): Uint8Ar
 }
 
 function getSupportedTextureType(gl: WebGLRenderingContext): { type: number; filter: number } {
-	const isIOS = typeof navigator !== 'undefined' && /(iPad|iPhone|iPod)/i.test(navigator.userAgent)
 	const halfFloatExt = gl.getExtension('OES_texture_half_float') as { HALF_FLOAT_OES: number } | null
 	const halfFloatLinear = gl.getExtension('OES_texture_half_float_linear')
 	const floatExt = gl.getExtension('OES_texture_float')
@@ -300,17 +299,15 @@ function getSupportedTextureType(gl: WebGLRenderingContext): { type: number; fil
 	gl.getExtension('WEBGL_color_buffer_float')
 	gl.getExtension('EXT_color_buffer_half_float')
 
+	// Feature-detect renderable texture precision in preference order without UA sniffing
 	const candidates: Array<{ type: number; filter: number }> = []
-	if (!isIOS && floatExt) {
-		candidates.push({ type: gl.FLOAT, filter: floatLinear ? gl.LINEAR : gl.NEAREST })
-	}
 	if (halfFloatExt) {
 		candidates.push({
 			type: halfFloatExt.HALF_FLOAT_OES,
 			filter: halfFloatLinear ? gl.LINEAR : gl.NEAREST,
 		})
 	}
-	if (isIOS && floatExt) {
+	if (floatExt) {
 		candidates.push({ type: gl.FLOAT, filter: floatLinear ? gl.LINEAR : gl.NEAREST })
 	}
 
@@ -374,17 +371,16 @@ export function initLiquidWave(options: LiquidWaveOptions = {}) {
 	const canvas = document.getElementById('liquid-wave-canvas') as HTMLCanvasElement | null
 	if (!canvas) return
 
-	const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-	if (prefersReducedMotion) return
+	const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+	const forcedColorsQuery = window.matchMedia('(forced-colors: active)')
+	if (reducedMotionQuery.matches || forcedColorsQuery.matches) return
 
 	const gl = canvas.getContext('webgl', {
 		alpha: true,
 		antialias: false,
-		powerPreference: 'high-performance',
+		powerPreference: 'default',
 	})
 	if (!gl) return
-
-	const container = document.getElementById('liquid-wave-container')
 
 	// Parse configuration from options or data attributes on canvas
 	const dataset = canvas.dataset
@@ -439,6 +435,72 @@ export function initLiquidWave(options: LiquidWaveOptions = {}) {
 		!colorProgram
 	) {
 		return
+	}
+
+	const locations = {
+		advection: {
+			position: gl.getAttribLocation(advectionProgram, 'position'),
+			boundarySpace: gl.getUniformLocation(advectionProgram, 'boundarySpace'),
+			px: gl.getUniformLocation(advectionProgram, 'px'),
+			fboSize: gl.getUniformLocation(advectionProgram, 'fboSize'),
+			dt: gl.getUniformLocation(advectionProgram, 'dt'),
+			isBFECC: gl.getUniformLocation(advectionProgram, 'isBFECC'),
+			velocity: gl.getUniformLocation(advectionProgram, 'velocity'),
+		},
+		boundary: {
+			position: gl.getAttribLocation(boundaryProgram, 'position'),
+			px: gl.getUniformLocation(boundaryProgram, 'px'),
+			fboSize: gl.getUniformLocation(boundaryProgram, 'fboSize'),
+			dt: gl.getUniformLocation(boundaryProgram, 'dt'),
+			isBFECC: gl.getUniformLocation(boundaryProgram, 'isBFECC'),
+			velocity: gl.getUniformLocation(boundaryProgram, 'velocity'),
+		},
+		externalForce: {
+			position: gl.getAttribLocation(externalForceProgram, 'position'),
+			uv: gl.getAttribLocation(externalForceProgram, 'uv'),
+			px: gl.getUniformLocation(externalForceProgram, 'px'),
+			force: gl.getUniformLocation(externalForceProgram, 'force'),
+			center: gl.getUniformLocation(externalForceProgram, 'center'),
+			scale: gl.getUniformLocation(externalForceProgram, 'scale'),
+		},
+		viscous: {
+			position: gl.getAttribLocation(viscousProgram, 'position'),
+			boundarySpace: gl.getUniformLocation(viscousProgram, 'boundarySpace'),
+			px: gl.getUniformLocation(viscousProgram, 'px'),
+			v: gl.getUniformLocation(viscousProgram, 'v'),
+			dt: gl.getUniformLocation(viscousProgram, 'dt'),
+			velocity: gl.getUniformLocation(viscousProgram, 'velocity'),
+			velocityNew: gl.getUniformLocation(viscousProgram, 'velocity_new'),
+		},
+		divergence: {
+			position: gl.getAttribLocation(divergenceProgram, 'position'),
+			boundarySpace: gl.getUniformLocation(divergenceProgram, 'boundarySpace'),
+			px: gl.getUniformLocation(divergenceProgram, 'px'),
+			dt: gl.getUniformLocation(divergenceProgram, 'dt'),
+			velocity: gl.getUniformLocation(divergenceProgram, 'velocity'),
+		},
+		poisson: {
+			position: gl.getAttribLocation(poissonProgram, 'position'),
+			boundarySpace: gl.getUniformLocation(poissonProgram, 'boundarySpace'),
+			px: gl.getUniformLocation(poissonProgram, 'px'),
+			divergence: gl.getUniformLocation(poissonProgram, 'divergence'),
+			pressure: gl.getUniformLocation(poissonProgram, 'pressure'),
+		},
+		pressure: {
+			position: gl.getAttribLocation(pressureProgram, 'position'),
+			boundarySpace: gl.getUniformLocation(pressureProgram, 'boundarySpace'),
+			px: gl.getUniformLocation(pressureProgram, 'px'),
+			dt: gl.getUniformLocation(pressureProgram, 'dt'),
+			pressure: gl.getUniformLocation(pressureProgram, 'pressure'),
+			velocity: gl.getUniformLocation(pressureProgram, 'velocity'),
+		},
+		color: {
+			position: gl.getAttribLocation(colorProgram, 'position'),
+			boundarySpace: gl.getUniformLocation(colorProgram, 'boundarySpace'),
+			bgColor: gl.getUniformLocation(colorProgram, 'bgColor'),
+			velocity: gl.getUniformLocation(colorProgram, 'velocity'),
+			palette: gl.getUniformLocation(colorProgram, 'palette'),
+		},
 	}
 
 	// Setup geometry buffers
@@ -587,11 +649,12 @@ export function initLiquidWave(options: LiquidWaveOptions = {}) {
 
 	function handlePointerMove(clientX: number, clientY: number) {
 		mouse.lastUserInteraction = performance.now()
+		const wasAutoActive = mouse.isAutoActive
 		if (autoState.active) {
 			autoState.active = false
 			mouse.isAutoActive = false
 		}
-		if (mouse.isAutoActive && !mouse.hasUserControl && !mouse.takeoverActive) {
+		if (wasAutoActive && !mouse.hasUserControl && !mouse.takeoverActive) {
 			const nx = clientX / Math.max(1, width)
 			const ny = clientY / Math.max(1, height)
 			mouse.takeoverFromX = mouse.coordsX
@@ -719,10 +782,9 @@ export function initLiquidWave(options: LiquidWaveOptions = {}) {
 		}
 	}
 
-	function bindQuad(program: WebGLProgram) {
+	function bindQuad(posLoc: number) {
 		if (!gl) return
 		gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer)
-		const posLoc = gl.getAttribLocation(program, 'position')
 		if (posLoc >= 0) {
 			gl.enableVertexAttribArray(posLoc)
 			gl.vertexAttribPointer(posLoc, 3, gl.FLOAT, false, 0, 0)
@@ -751,6 +813,8 @@ export function initLiquidWave(options: LiquidWaveOptions = {}) {
 
 	let animationFrameId: number | null = null
 	let isVisible = true
+	let userPaused = false
+	let contextLost = false
 
 	function render() {
 		if (!gl || !isVisible) return
@@ -765,28 +829,28 @@ export function initLiquidWave(options: LiquidWaveOptions = {}) {
 		gl.disable(gl.BLEND)
 		bindTarget(vel1)
 		gl.useProgram(advectionProgram!)
-		bindQuad(advectionProgram!)
-		gl.uniform2f(gl.getUniformLocation(advectionProgram!, 'boundarySpace'), cellScaleX, cellScaleY)
-		gl.uniform2f(gl.getUniformLocation(advectionProgram!, 'px'), cellScaleX, cellScaleY)
-		gl.uniform2f(gl.getUniformLocation(advectionProgram!, 'fboSize'), fboWidth, fboHeight)
-		gl.uniform1f(gl.getUniformLocation(advectionProgram!, 'dt'), dt)
-		gl.uniform1i(gl.getUniformLocation(advectionProgram!, 'isBFECC'), BFECC ? 1 : 0)
-		bindTextureUnit(0, vel0!.texture, gl.getUniformLocation(advectionProgram!, 'velocity'))
+		bindQuad(locations.advection.position)
+		gl.uniform2f(locations.advection.boundarySpace, cellScaleX, cellScaleY)
+		gl.uniform2f(locations.advection.px, cellScaleX, cellScaleY)
+		gl.uniform2f(locations.advection.fboSize, fboWidth, fboHeight)
+		gl.uniform1f(locations.advection.dt, dt)
+		gl.uniform1i(locations.advection.isBFECC, BFECC ? 1 : 0)
+		bindTextureUnit(0, vel0!.texture, locations.advection.velocity)
 		gl.drawArrays(gl.TRIANGLES, 0, 6)
 
 		if (isBounce) {
 			gl.useProgram(boundaryProgram!)
 			gl.bindBuffer(gl.ARRAY_BUFFER, boundaryBuffer)
-			const posLoc = gl.getAttribLocation(boundaryProgram!, 'position')
+			const posLoc = locations.boundary.position
 			if (posLoc >= 0) {
 				gl.enableVertexAttribArray(posLoc)
 				gl.vertexAttribPointer(posLoc, 3, gl.FLOAT, false, 0, 0)
 			}
-			gl.uniform2f(gl.getUniformLocation(boundaryProgram!, 'px'), cellScaleX, cellScaleY)
-			gl.uniform2f(gl.getUniformLocation(boundaryProgram!, 'fboSize'), fboWidth, fboHeight)
-			gl.uniform1f(gl.getUniformLocation(boundaryProgram!, 'dt'), dt)
-			gl.uniform1i(gl.getUniformLocation(boundaryProgram!, 'isBFECC'), BFECC ? 1 : 0)
-			bindTextureUnit(0, vel0!.texture, gl.getUniformLocation(boundaryProgram!, 'velocity'))
+			gl.uniform2f(locations.boundary.px, cellScaleX, cellScaleY)
+			gl.uniform2f(locations.boundary.fboSize, fboWidth, fboHeight)
+			gl.uniform1f(locations.boundary.dt, dt)
+			gl.uniform1i(locations.boundary.isBFECC, BFECC ? 1 : 0)
+			bindTextureUnit(0, vel0!.texture, locations.boundary.velocity)
 			gl.drawArrays(gl.LINES, 0, 8)
 		}
 
@@ -796,8 +860,8 @@ export function initLiquidWave(options: LiquidWaveOptions = {}) {
 		bindTarget(vel1)
 		gl.useProgram(externalForceProgram!)
 		gl.bindBuffer(gl.ARRAY_BUFFER, mouseBuffer)
-		const mousePosLoc = gl.getAttribLocation(externalForceProgram!, 'position')
-		const mouseUvLoc = gl.getAttribLocation(externalForceProgram!, 'uv')
+		const mousePosLoc = locations.externalForce.position
+		const mouseUvLoc = locations.externalForce.uv
 		if (mousePosLoc >= 0) {
 			gl.enableVertexAttribArray(mousePosLoc)
 			gl.vertexAttribPointer(mousePosLoc, 3, gl.FLOAT, false, 20, 0)
@@ -812,10 +876,10 @@ export function initLiquidWave(options: LiquidWaveOptions = {}) {
 		const cursorSizeY = Math.min(0.45, cursorSize * cellScaleY)
 		const centerX = Math.min(Math.max(mouse.coordsX, -1 + cursorSizeX + cellScaleX * 2), 1 - cursorSizeX - cellScaleX * 2)
 		const centerY = Math.min(Math.max(mouse.coordsY, -1 + cursorSizeY + cellScaleY * 2), 1 - cursorSizeY - cellScaleY * 2)
-		gl.uniform2f(gl.getUniformLocation(externalForceProgram!, 'px'), cellScaleX, cellScaleY)
-		gl.uniform2f(gl.getUniformLocation(externalForceProgram!, 'force'), forceX, forceY)
-		gl.uniform2f(gl.getUniformLocation(externalForceProgram!, 'center'), centerX, centerY)
-		gl.uniform2f(gl.getUniformLocation(externalForceProgram!, 'scale'), cursorSize, cursorSize)
+		gl.uniform2f(locations.externalForce.px, cellScaleX, cellScaleY)
+		gl.uniform2f(locations.externalForce.force, forceX, forceY)
+		gl.uniform2f(locations.externalForce.center, centerX, centerY)
+		gl.uniform2f(locations.externalForce.scale, cursorSize, cursorSize)
 		gl.drawArrays(gl.TRIANGLES, 0, 6)
 		if (mouseUvLoc >= 0) {
 			gl.disableVertexAttribArray(mouseUvLoc)
@@ -826,19 +890,19 @@ export function initLiquidWave(options: LiquidWaveOptions = {}) {
 		let activeVel: FBO = vel1!
 		if (isViscous) {
 			gl.useProgram(viscousProgram!)
-			bindQuad(viscousProgram!)
-			gl.uniform2f(gl.getUniformLocation(viscousProgram!, 'boundarySpace'), boundaryX, boundaryY)
-			gl.uniform2f(gl.getUniformLocation(viscousProgram!, 'px'), cellScaleX, cellScaleY)
-			gl.uniform1f(gl.getUniformLocation(viscousProgram!, 'v'), viscous)
-			gl.uniform1f(gl.getUniformLocation(viscousProgram!, 'dt'), dt)
-			bindTextureUnit(0, vel1!.texture, gl.getUniformLocation(viscousProgram!, 'velocity'))
+			bindQuad(locations.viscous.position)
+			gl.uniform2f(locations.viscous.boundarySpace, boundaryX, boundaryY)
+			gl.uniform2f(locations.viscous.px, cellScaleX, cellScaleY)
+			gl.uniform1f(locations.viscous.v, viscous)
+			gl.uniform1f(locations.viscous.dt, dt)
+			bindTextureUnit(0, vel1!.texture, locations.viscous.velocity)
 
 			let vOut: FBO = velViscous0!
 			for (let i = 0; i < iterationsViscous; i++) {
 				const vIn = i % 2 === 0 ? velViscous0! : velViscous1!
 				vOut = i % 2 === 0 ? velViscous1! : velViscous0!
 				bindTarget(vOut)
-				bindTextureUnit(1, vIn.texture, gl.getUniformLocation(viscousProgram!, 'velocity_new'))
+				bindTextureUnit(1, vIn.texture, locations.viscous.velocityNew)
 				gl.drawArrays(gl.TRIANGLES, 0, 6)
 			}
 			activeVel = vOut
@@ -847,38 +911,38 @@ export function initLiquidWave(options: LiquidWaveOptions = {}) {
 		// 4. Divergence pass (activeVel -> divFBO)
 		bindTarget(divFBO)
 		gl.useProgram(divergenceProgram!)
-		bindQuad(divergenceProgram!)
-		gl.uniform2f(gl.getUniformLocation(divergenceProgram!, 'boundarySpace'), boundaryX, boundaryY)
-		gl.uniform2f(gl.getUniformLocation(divergenceProgram!, 'px'), cellScaleX, cellScaleY)
-		gl.uniform1f(gl.getUniformLocation(divergenceProgram!, 'dt'), dt)
-		bindTextureUnit(0, activeVel.texture, gl.getUniformLocation(divergenceProgram!, 'velocity'))
+		bindQuad(locations.divergence.position)
+		gl.uniform2f(locations.divergence.boundarySpace, boundaryX, boundaryY)
+		gl.uniform2f(locations.divergence.px, cellScaleX, cellScaleY)
+		gl.uniform1f(locations.divergence.dt, dt)
+		bindTextureUnit(0, activeVel.texture, locations.divergence.velocity)
 		gl.drawArrays(gl.TRIANGLES, 0, 6)
 
 		// 5. Poisson pressure solver pass (divFBO -> pressure0 / pressure1)
 		gl.useProgram(poissonProgram!)
-		bindQuad(poissonProgram!)
-		gl.uniform2f(gl.getUniformLocation(poissonProgram!, 'boundarySpace'), boundaryX, boundaryY)
-		gl.uniform2f(gl.getUniformLocation(poissonProgram!, 'px'), cellScaleX, cellScaleY)
-		bindTextureUnit(0, divFBO!.texture, gl.getUniformLocation(poissonProgram!, 'divergence'))
+		bindQuad(locations.poisson.position)
+		gl.uniform2f(locations.poisson.boundarySpace, boundaryX, boundaryY)
+		gl.uniform2f(locations.poisson.px, cellScaleX, cellScaleY)
+		bindTextureUnit(0, divFBO!.texture, locations.poisson.divergence)
 
 		let activePressure: FBO = pressure0!
 		for (let i = 0; i < iterationsPoisson; i++) {
 			const pIn = i % 2 === 0 ? pressure0! : pressure1!
 			activePressure = i % 2 === 0 ? pressure1! : pressure0!
 			bindTarget(activePressure)
-			bindTextureUnit(1, pIn.texture, gl.getUniformLocation(poissonProgram!, 'pressure'))
+			bindTextureUnit(1, pIn.texture, locations.poisson.pressure)
 			gl.drawArrays(gl.TRIANGLES, 0, 6)
 		}
 
 		// 6. Pressure projection pass (activeVel - grad(activePressure) -> vel0)
 		bindTarget(vel0)
 		gl.useProgram(pressureProgram!)
-		bindQuad(pressureProgram!)
-		gl.uniform2f(gl.getUniformLocation(pressureProgram!, 'boundarySpace'), boundaryX, boundaryY)
-		gl.uniform2f(gl.getUniformLocation(pressureProgram!, 'px'), cellScaleX, cellScaleY)
-		gl.uniform1f(gl.getUniformLocation(pressureProgram!, 'dt'), dt)
-		bindTextureUnit(0, activePressure.texture, gl.getUniformLocation(pressureProgram!, 'pressure'))
-		bindTextureUnit(1, activeVel.texture, gl.getUniformLocation(pressureProgram!, 'velocity'))
+		bindQuad(locations.pressure.position)
+		gl.uniform2f(locations.pressure.boundarySpace, boundaryX, boundaryY)
+		gl.uniform2f(locations.pressure.px, cellScaleX, cellScaleY)
+		gl.uniform1f(locations.pressure.dt, dt)
+		bindTextureUnit(0, activePressure.texture, locations.pressure.pressure)
+		bindTextureUnit(1, activeVel.texture, locations.pressure.velocity)
 		gl.drawArrays(gl.TRIANGLES, 0, 6)
 
 		// 7. Color Output pass to screen (vel0 + paletteTex -> screen)
@@ -888,14 +952,25 @@ export function initLiquidWave(options: LiquidWaveOptions = {}) {
 		gl.enable(gl.BLEND)
 		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
 		gl.useProgram(colorProgram!)
-		bindQuad(colorProgram!)
-		gl.uniform2f(gl.getUniformLocation(colorProgram!, 'boundarySpace'), 0, 0)
-		gl.uniform4f(gl.getUniformLocation(colorProgram!, 'bgColor'), 0, 0, 0, 0)
-		bindTextureUnit(0, vel0!.texture, gl.getUniformLocation(colorProgram!, 'velocity'))
-		bindTextureUnit(1, paletteTex, gl.getUniformLocation(colorProgram!, 'palette'))
+		bindQuad(locations.color.position)
+		gl.uniform2f(locations.color.boundarySpace, 0, 0)
+		gl.uniform4f(locations.color.bgColor, 0, 0, 0, 0)
+		bindTextureUnit(0, vel0!.texture, locations.color.velocity)
+		bindTextureUnit(1, paletteTex, locations.color.palette)
 		gl.drawArrays(gl.TRIANGLES, 0, 6)
 
 		animationFrameId = requestAnimationFrame(render)
+	}
+
+	function canRun() {
+		return !document.hidden && !userPaused && !reducedMotionQuery.matches && !forcedColorsQuery.matches && !contextLost
+	}
+
+	function clearCanvas() {
+		if (!gl) return
+		bindTarget(null)
+		gl.clearColor(0, 0, 0, 0)
+		gl.clear(gl.COLOR_BUFFER_BIT)
 	}
 
 	function pauseSimulation() {
@@ -907,7 +982,7 @@ export function initLiquidWave(options: LiquidWaveOptions = {}) {
 	}
 
 	function resumeSimulation() {
-		if (document.hidden) return
+		if (!canRun()) return
 		isVisible = true
 		autoState.lastTime = performance.now()
 		if (animationFrameId === null) {
@@ -915,33 +990,54 @@ export function initLiquidWave(options: LiquidWaveOptions = {}) {
 		}
 	}
 
-	if (container) {
-		container.addEventListener('contentvisibilityautostatechange', (event: Event) => {
-			const cvEvent = event as Event & { skipped?: boolean }
-			if (cvEvent.skipped) {
+	const toggleButton = document.getElementById('liquid-wave-toggle') as HTMLButtonElement | null
+	if (toggleButton) {
+		toggleButton.hidden = false
+		toggleButton.textContent = 'Pause background'
+		toggleButton.addEventListener('click', () => {
+			userPaused = !userPaused
+			if (userPaused) {
 				pauseSimulation()
+				toggleButton.textContent = 'Play background'
 			} else {
+				toggleButton.textContent = 'Pause background'
 				resumeSimulation()
 			}
 		})
+	}
 
-		const isContentVisibilitySupported = 'contentVisibility' in document.documentElement.style
-		if (!isContentVisibilitySupported && typeof IntersectionObserver !== 'undefined') {
-			const observer = new IntersectionObserver(
-				(entries) => {
-					for (const entry of entries) {
-						if (entry.isIntersecting) {
-							resumeSimulation()
-						} else {
-							pauseSimulation()
-						}
-					}
-				},
-				{ rootMargin: '200px' },
-			)
-			observer.observe(container)
+	function handlePreferenceChange() {
+		if (reducedMotionQuery.matches || forcedColorsQuery.matches) {
+			pauseSimulation()
+			clearCanvas()
+			if (toggleButton) {
+				toggleButton.hidden = true
+			}
+		} else {
+			if (toggleButton) {
+				toggleButton.hidden = false
+				toggleButton.textContent = userPaused ? 'Play background' : 'Pause background'
+			}
+			resumeSimulation()
 		}
 	}
+
+	if (typeof reducedMotionQuery.addEventListener === 'function') {
+		reducedMotionQuery.addEventListener('change', handlePreferenceChange)
+	}
+	if (typeof forcedColorsQuery.addEventListener === 'function') {
+		forcedColorsQuery.addEventListener('change', handlePreferenceChange)
+	}
+
+	canvas.addEventListener('webglcontextlost', (event) => {
+		event.preventDefault()
+		contextLost = true
+		pauseSimulation()
+	})
+	canvas.addEventListener('webglcontextrestored', () => {
+		contextLost = false
+		resumeSimulation()
+	})
 
 	document.addEventListener('visibilitychange', () => {
 		if (document.hidden) {

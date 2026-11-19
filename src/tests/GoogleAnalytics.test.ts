@@ -71,6 +71,7 @@ describe('GoogleAnalytics.astro script', () => {
 		const gaScript = document.getElementById('ga-gtag') as HTMLScriptElement
 		expect(gaScript).not.toBeNull()
 		expect(gaScript.async).toBe(true)
+		expect(gaScript.getAttribute('fetchpriority')).toBe('low')
 		expect(gaScript.src).toBe('https://www.googletagmanager.com/gtag/js?id=G-2NMTBPYB0R')
 	})
 
@@ -94,6 +95,7 @@ describe('GoogleAnalytics.astro script', () => {
 		const gaScript = document.getElementById('ga-gtag') as HTMLScriptElement
 		expect(gaScript).not.toBeNull()
 		expect(gaScript.async).toBe(true)
+		expect(gaScript.getAttribute('fetchpriority')).toBe('low')
 		expect(gaScript.src).toBe('https://www.googletagmanager.com/gtag/js?id=G-2NMTBPYB0R')
 	})
 

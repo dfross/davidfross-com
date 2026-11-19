@@ -6,10 +6,6 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
 	site: 'https://www.davidfross.com/',
 
-	prefetch: {
-		prefetchAll: true,
-	},
-
 	integrations: [icon(), sitemap()],
 
 	fonts: [

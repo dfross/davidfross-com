@@ -12,6 +12,7 @@
 		const script = document.createElement('script')
 		script.id = 'ga-gtag'
 		script.async = true
+		script.setAttribute('fetchpriority', 'low')
 		script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`
 		document.head.appendChild(script)
 	}

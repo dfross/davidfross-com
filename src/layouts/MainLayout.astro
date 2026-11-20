@@ -51,14 +51,14 @@ const jsonLd = {
 		<title>{pageTitle}</title>
 		<script is:inline type="application/ld+json" set:html={serialize(jsonLd, { isJSON: true })} />
 	</head>
-	<body class="bg-bg text-cream mx-auto flex min-h-dvh max-w-3xl flex-col px-6 pt-9 sm:px-9">
+	<body class="bg-bg text-fg mx-auto flex min-h-dvh max-w-3xl flex-col px-6 pt-9 sm:px-9">
 		<LiquidWave />
 		<main id="main-content" class="flex grow flex-col justify-center gap-9">
 			<slot />
 		</main>
 		<footer class="site-footer py-9">
 			<div class="site-footer-inner">
-				<p class="text-muted text-sm text-pretty">{copyrightNotice}</p>
+				<p class="text-fg-muted text-sm text-pretty">{copyrightNotice}</p>
 				<button type="button" id="liquid-wave-toggle" class="wave-toggle focus-ring" hidden>
 					Pause background
 				</button>

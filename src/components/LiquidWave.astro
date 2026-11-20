@@ -1,6 +1,4 @@
 ---
-import { LIQUID_WAVE_PALETTE } from '../scripts/liquid-wave'
-
 export interface Props {
 	colors?: readonly string[]
 	color1?: string
@@ -23,7 +21,7 @@ export interface Props {
 }
 
 const {
-	colors = LIQUID_WAVE_PALETTE,
+	colors,
 	color1,
 	color2,
 	color3,
@@ -44,7 +42,8 @@ const {
 } = Astro.props
 
 const resolvedColors = [color1, color2, color3].filter(Boolean) as string[]
-const paletteJson = JSON.stringify(resolvedColors.length > 0 ? resolvedColors : colors)
+const explicitColors = resolvedColors.length > 0 ? resolvedColors : colors && colors.length > 0 ? colors : undefined
+const paletteJson = explicitColors ? JSON.stringify(explicitColors) : undefined
 ---
 
 <div id="liquid-wave-container" class:list={['pointer-events-none fixed inset-0 -z-10 overflow-hidden', className]} aria-hidden="true">

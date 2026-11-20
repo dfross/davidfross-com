@@ -1,11 +1,13 @@
 export const LIQUID_WAVE_PALETTE = [
-	'#3f6c50', // --color-green: deep terminal phosphor green (outer wake)
-	'#4f7e9b', // --color-blue: LexisNexis steel blue (wave body)
-	'#6ba0c2', // --color-blue-light: luminous slate blue (mid-wave flow)
-	'#a89f91', // --color-muted: warm stone transition
-	'#f75546', // --color-red: vibrant terminal red (high-velocity crest)
-	'#ceb288', // --color-tan: warm vintage amber/tan (core highlight, softer than cream)
+	'#3f6c50', // --palette-green: deep terminal phosphor green (outer wake)
+	'#4f7e9b', // --palette-blue: LexisNexis steel blue (wave body)
+	'#90c5e9', // --palette-blue-light: luminous slate blue (mid-wave flow)
+	'#bcb3a5', // --palette-muted: warm stone transition
+	'#ff6d50', // --palette-red: vibrant terminal red (high-velocity crest)
+	'#ceb288', // --palette-tan: warm vintage amber/tan (core highlight)
 ] as const
+
+const WAVE_STOP_VARS = ['--wave-stop-1', '--wave-stop-2', '--wave-stop-3', '--wave-stop-4', '--wave-stop-5', '--wave-stop-6'] as const
 
 export interface LiquidWaveOptions {
 	colors?: readonly string[]
@@ -118,7 +120,8 @@ const COLOR_FRAG = `
 		// Gentle knee at the top end so the full palette shows without harsh white-hot clipping
 		float lenv = clamp(rawLen / (1.0 + rawLen * 0.22), 0.0, 1.0);
 		vec3 c = texture2D(palette, vec2(lenv, 0.5)).rgb * 0.9;
-		vec3 outRGB = mix(bgColor.rgb, c, lenv);
+		// Output straight RGB when compositing over transparent canvas so gl.SRC_ALPHA doesn't premultiply twice
+		vec3 outRGB = bgColor.a > 0.0 ? mix(bgColor.rgb, c, lenv) : c;
 		float outA = mix(bgColor.a, 0.56, lenv);
 		gl_FragColor = vec4(outRGB, outA);
 	}
@@ -248,43 +251,143 @@ function initWebGLProgram(glCtx: WebGLRenderingContext, vertexSource: string, fr
 	return program
 }
 
-export function parseColorToRgb(colorStr: string): [number, number, number] {
-	const clean = colorStr.trim().replace(/^#/, '')
-	if (clean.length === 3) {
+type RgbTuple = [number, number, number]
+type OklabTuple = [number, number, number]
+
+function srgbToLinear(channel: number): number {
+	const c = channel / 255
+	return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+}
+
+function linearToSrgb(channel: number): number {
+	const c = Math.max(0, Math.min(1, channel))
+	const encoded = c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055
+	return Math.round(encoded * 255)
+}
+
+function rgbToOklab([r8, g8, b8]: RgbTuple): OklabTuple {
+	const r = srgbToLinear(r8)
+	const g = srgbToLinear(g8)
+	const b = srgbToLinear(b8)
+
+	const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b)
+	const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b)
+	const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b)
+
+	return [
+		0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+		1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
+		0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s,
+	]
+}
+
+function oklabToRgb([L, a, b]: OklabTuple): RgbTuple {
+	const l_ = L + 0.3963377774 * a + 0.2158037573 * b
+	const m_ = L - 0.1055613458 * a - 0.0638541728 * b
+	const s_ = L - 0.0894841775 * a - 1.291485548 * b
+
+	const l = l_ * l_ * l_
+	const m = m_ * m_ * m_
+	const s = s_ * s_ * s_
+
+	return [
+		linearToSrgb(+4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s),
+		linearToSrgb(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s),
+		linearToSrgb(-0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s),
+	]
+}
+
+export function tryParseColorToRgb(colorStr: string): RgbTuple | null {
+	const trimmed = colorStr.trim()
+	const rgbMatch = /^rgb\(\s*(\d{1,3})(?:\s*,\s*|\s+)(\d{1,3})(?:\s*,\s*|\s+)(\d{1,3})\s*\)$/i.exec(trimmed)
+	if (rgbMatch) {
+		const r = Number(rgbMatch[1])
+		const g = Number(rgbMatch[2])
+		const b = Number(rgbMatch[3])
+		if (r <= 255 && g <= 255 && b <= 255) {
+			return [r, g, b]
+		}
+		return null
+	}
+
+	const clean = trimmed.replace(/^#/, '')
+	if (clean.length === 3 && /^[0-9a-f]{3}$/i.test(clean)) {
 		const r = parseInt(clean.charAt(0) + clean.charAt(0), 16)
 		const g = parseInt(clean.charAt(1) + clean.charAt(1), 16)
 		const b = parseInt(clean.charAt(2) + clean.charAt(2), 16)
-		if (!Number.isNaN(r) && !Number.isNaN(g) && !Number.isNaN(b)) {
-			return [r, g, b]
-		}
-	} else if (clean.length === 6) {
+		return [r, g, b]
+	}
+	if (clean.length === 6 && /^[0-9a-f]{6}$/i.test(clean)) {
 		const r = parseInt(clean.slice(0, 2), 16)
 		const g = parseInt(clean.slice(2, 4), 16)
 		const b = parseInt(clean.slice(4, 6), 16)
-		if (!Number.isNaN(r) && !Number.isNaN(g) && !Number.isNaN(b)) {
-			return [r, g, b]
-		}
+		return [r, g, b]
 	}
-	return [225, 218, 205] // fallback to #e1dacd (--color-cream)
+
+	return null
+}
+
+export function parseColorToRgb(colorStr: string): RgbTuple {
+	return tryParseColorToRgb(colorStr) ?? [225, 218, 205] // fallback to #e1dacd (--palette-cream)
+}
+
+export function readWavePaletteFromCss(root: Element = document.documentElement): string[] | null {
+	if (typeof window === 'undefined' || typeof window.getComputedStyle !== 'function') return null
+	const style = window.getComputedStyle(root)
+	const stops: string[] = []
+	for (const varName of WAVE_STOP_VARS) {
+		const value = style.getPropertyValue(varName).trim()
+		if (!value || !tryParseColorToRgb(value)) {
+			return null
+		}
+		stops.push(value)
+	}
+	return stops
 }
 
 export function buildPaletteData(stops: readonly string[], width = 256): Uint8Array {
 	const validStops = stops.length > 0 ? stops : LIQUID_WAVE_PALETTE
-	const rgbStops = (validStops.length === 1 ? [validStops[0]!, validStops[0]!] : validStops).map(parseColorToRgb)
+	const normalizedStops = validStops.length === 1 ? [validStops[0]!, validStops[0]!] : validStops
+	const rgbStops = normalizedStops.map(parseColorToRgb)
+	const labStops = rgbStops.map(rgbToOklab)
+
+	// Parameterize stops by cumulative OKLab distance for perceptually even color transitions
+	const cumDist: number[] = [0]
+	for (let i = 1; i < labStops.length; i++) {
+		const prev = labStops[i - 1]!
+		const curr = labStops[i]!
+		const dist = Math.hypot(curr[0] - prev[0], curr[1] - prev[1], curr[2] - prev[2])
+		cumDist.push(cumDist[i - 1]! + dist)
+	}
+
+	const totalDist = cumDist[cumDist.length - 1] ?? 0
 	const data = new Uint8Array(width * 4)
-	const maxIndex = rgbStops.length - 1
+	const lastStopIdx = rgbStops.length - 1
 
 	for (let i = 0; i < width; i++) {
-		const t = width > 1 ? i / (width - 1) : 0
-		const scaled = t * maxIndex
-		const idx = Math.min(Math.floor(scaled), maxIndex - 1)
-		const frac = scaled - idx
-		const c0 = rgbStops[idx]!
-		const c1 = rgbStops[idx + 1]!
+		let rgb: RgbTuple
+		if (i === 0 || totalDist === 0) {
+			rgb = rgbStops[0]!
+		} else if (i === width - 1) {
+			rgb = rgbStops[lastStopIdx]!
+		} else {
+			const target = (i / (width - 1)) * totalDist
+			let idx = 0
+			while (idx < cumDist.length - 2 && cumDist[idx + 1]! < target) {
+				idx++
+			}
+			const startDist = cumDist[idx]!
+			const endDist = cumDist[idx + 1]!
+			const span = endDist - startDist
+			const frac = span > 0 ? (target - startDist) / span : 0
+			const c0 = labStops[idx]!
+			const c1 = labStops[idx + 1]!
+			rgb = oklabToRgb([c0[0] + (c1[0] - c0[0]) * frac, c0[1] + (c1[1] - c0[1]) * frac, c0[2] + (c1[2] - c0[2]) * frac])
+		}
 
-		data[i * 4 + 0] = Math.round(c0[0] + (c1[0] - c0[0]) * frac)
-		data[i * 4 + 1] = Math.round(c0[1] + (c1[1] - c0[1]) * frac)
-		data[i * 4 + 2] = Math.round(c0[2] + (c1[2] - c0[2]) * frac)
+		data[i * 4 + 0] = rgb[0]
+		data[i * 4 + 1] = rgb[1]
+		data[i * 4 + 2] = rgb[2]
 		data[i * 4 + 3] = 255
 	}
 
@@ -395,7 +498,7 @@ export function initLiquidWave(options: LiquidWaveOptions = {}) {
 				? datasetColors
 				: customStopList.length > 0
 					? customStopList
-					: LIQUID_WAVE_PALETTE
+					: (readWavePaletteFromCss() ?? LIQUID_WAVE_PALETTE)
 
 	const mouseForce = options.mouseForce ?? (dataset.mouseForce ? Number(dataset.mouseForce) : 20)
 	const cursorSize = options.cursorSize ?? (dataset.cursorSize ? Number(dataset.cursorSize) : 100)

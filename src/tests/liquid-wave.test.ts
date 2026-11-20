@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { initLiquidWave, LIQUID_WAVE_PALETTE, parseColorToRgb, buildPaletteData } from '../scripts/liquid-wave'
+import { initLiquidWave, LIQUID_WAVE_PALETTE, parseColorToRgb, readWavePaletteFromCss, buildPaletteData } from '../scripts/liquid-wave'
 
 function createMockWebGLContext() {
 	return {
@@ -252,9 +252,16 @@ describe('LiquidWave', () => {
 		expect(mockGetContext).not.toHaveBeenCalled()
 	})
 
-	it('parses LexisNexis palette hex colors and builds a smooth RGBA palette texture', () => {
-		expect(parseColorToRgb('#f75546')).toEqual([247, 85, 70])
+	it('parses LexisNexis palette hex and rgb colors and builds a smooth OKLab RGBA palette texture', () => {
+		expect(parseColorToRgb('#ff6d50')).toEqual([255, 109, 80])
 		expect(parseColorToRgb('#3f6c50')).toEqual([63, 108, 80])
+		expect(parseColorToRgb('#abc')).toEqual([170, 187, 204])
+		expect(parseColorToRgb('rgb(79, 126, 155)')).toEqual([79, 126, 155])
+		expect(parseColorToRgb('rgb(144 197 233)')).toEqual([144, 197, 233])
+		// Out-of-range or invalid strings fall back to cream (#e1dacd)
+		expect(parseColorToRgb('rgb(300, 0, 0)')).toEqual([225, 218, 205])
+		expect(parseColorToRgb('#12zzzz')).toEqual([225, 218, 205])
+		expect(parseColorToRgb('not-a-color')).toEqual([225, 218, 205])
 
 		const data = buildPaletteData(LIQUID_WAVE_PALETTE, 16)
 		expect(data.length).toBe(16 * 4)
@@ -262,5 +269,46 @@ describe('LiquidWave', () => {
 		expect([data[0], data[1], data[2], data[3]]).toEqual([63, 108, 80, 255])
 		// Last texel matches last stop (#ceb288)
 		expect([data[15 * 4], data[15 * 4 + 1], data[15 * 4 + 2], data[15 * 4 + 3]]).toEqual([206, 178, 136, 255])
+
+		// Interpolates through OKLab instead of darkening in sRGB midpoint
+		const midData = buildPaletteData(['#3f6c50', '#ff6d50'], 3)
+		expect([midData[4], midData[5], midData[6]]).toEqual([166, 115, 82])
+		expect([midData[4], midData[5], midData[6]]).not.toEqual([159, 109, 80])
+
+		// Arc-length parameterization distributes unequal-distance stops proportionally
+		const unequalData = buildPaletteData(['#000000', '#181817', '#ffffff'], 5)
+		// Midpoint texel (index 2, t=0.5) sits in the long second segment, well past #181817 (24)
+		expect(unequalData[2 * 4]!).toBeGreaterThan(80)
+	})
+
+	it('reads wave palette stops from CSS custom properties when all 6 are valid and returns null otherwise', () => {
+		expect(readWavePaletteFromCss()).toBeNull()
+
+		const root = document.documentElement
+		const cssStops = ['#3f6c50', 'rgb(79, 126, 155)', '#90c5e9', '#bcb3a5', '#ff6d50', '#ceb288']
+		cssStops.forEach((value, idx) => {
+			root.style.setProperty(`--wave-stop-${idx + 1}`, value)
+		})
+		expect(readWavePaletteFromCss(root)).toEqual(cssStops)
+
+		// Missing or invalid stop causes null so initLiquidWave falls back safely
+		root.style.removeProperty('--wave-stop-4')
+		expect(readWavePaletteFromCss(root)).toBeNull()
+
+		for (let i = 1; i <= 6; i++) {
+			root.style.removeProperty(`--wave-stop-${i}`)
+		}
+	})
+
+	it('avoids double-premultiplying color output in COLOR_FRAG when bgColor.a is zero', () => {
+		const glMock = createMockWebGLContext()
+		mockGetContext.mockReturnValue(glMock)
+
+		initLiquidWave()
+
+		const shaderSources = glMock.shaderSource.mock.calls.map((call) => call[1] as string)
+		const colorFrag = shaderSources.find((src) => src.includes('uniform sampler2D palette'))
+		expect(colorFrag).toBeDefined()
+		expect(colorFrag).toContain('bgColor.a > 0.0 ? mix(bgColor.rgb, c, lenv) : c')
 	})
 })

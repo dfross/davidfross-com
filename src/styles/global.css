@@ -5,17 +5,17 @@
 		var(--font-geist, 'Geist'), ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
 		'Noto Color Emoji';
 
-	/* LexisNexis terminal palette */
-	--color-bg: #181817;
-	--color-surface: #232321;
-	--color-chassis: #353533;
-	--color-cream: #e1dacd;
-	--color-tan: #ceb288;
-	--color-muted: #a89f91;
-	--color-blue: #4f7e9b;
-	--color-blue-light: #6ba0c2;
-	--color-red: #f75546;
-	--color-green: #3f6c50;
+	/* Semantic color roles */
+	--color-bg: var(--palette-bg);
+	--color-fg: var(--palette-cream);
+	--color-fg-muted: var(--palette-muted);
+	--color-accent: var(--palette-tan);
+	--color-accent-hover: var(--palette-blue-light);
+	--color-accent-active: var(--palette-cream);
+	--color-alert: var(--palette-red);
+	--color-focus: var(--palette-red);
+	--color-selection-bg: var(--palette-blue-light);
+	--color-selection-fg: var(--palette-bg);
 }
 
 @layer base {
@@ -25,6 +25,24 @@
 		@media (pointer: coarse) {
 			--target-size: 44px;
 		}
+
+		/* LexisNexis terminal reference palette */
+		--palette-bg: #181817;
+		--palette-cream: #e1dacd;
+		--palette-tan: #ceb288;
+		--palette-muted: #bcb3a5;
+		--palette-blue: #4f7e9b;
+		--palette-blue-light: #90c5e9;
+		--palette-red: #ff6d50;
+		--palette-green: #3f6c50;
+
+		/* LiquidWave stop bindings (read by liquid-wave.ts via getComputedStyle) */
+		--wave-stop-1: var(--palette-green);
+		--wave-stop-2: var(--palette-blue);
+		--wave-stop-3: var(--palette-blue-light);
+		--wave-stop-4: var(--palette-muted);
+		--wave-stop-5: var(--palette-red);
+		--wave-stop-6: var(--palette-tan);
 	}
 
 	body {
@@ -32,8 +50,8 @@
 	}
 
 	::selection {
-		background-color: var(--color-blue-light);
-		color: var(--color-bg);
+		background-color: var(--color-selection-bg);
+		color: var(--color-selection-fg);
 	}
 
 	@media (forced-colors: active) {
@@ -76,13 +94,13 @@
 
 	/* Focus ring — reusable keyboard focus indicator */
 	.focus-ring:focus-visible {
-		outline: 2px solid var(--color-red);
-		outline-offset: 2px;
+		outline: 2px solid var(--color-focus);
+		outline-offset: 3px;
 	}
 
 	/* Social icon link */
 	.social-link {
-		color: var(--color-tan);
+		color: var(--color-accent);
 		scale: 1;
 		transition: color 0.2s ease-out;
 		@media (prefers-reduced-motion: no-preference) {
@@ -94,7 +112,7 @@
 
 	@media (hover: hover) {
 		.social-link:hover {
-			color: var(--color-blue-light);
+			color: var(--color-accent-hover);
 			@media (prefers-reduced-motion: no-preference) {
 				scale: 1.1;
 			}
@@ -102,7 +120,7 @@
 	}
 
 	.social-link:active {
-		color: var(--color-cream);
+		color: var(--color-accent-active);
 		@media (prefers-reduced-motion: no-preference) {
 			scale: 0.96;
 		}
@@ -110,7 +128,7 @@
 
 	/* WebGL background pause/play control */
 	.wave-toggle {
-		color: var(--color-muted);
+		color: var(--color-fg-muted);
 		font-size: var(--text-sm);
 		line-height: var(--text-sm--line-height);
 		text-decoration: underline;
@@ -134,12 +152,12 @@
 
 	@media (hover: hover) {
 		.wave-toggle:hover {
-			color: var(--color-cream);
+			color: var(--color-fg);
 		}
 	}
 
 	.wave-toggle:active {
-		color: var(--color-tan);
+		color: var(--color-accent);
 		@media (prefers-reduced-motion: no-preference) {
 			scale: 0.97;
 		}
@@ -147,7 +165,7 @@
 
 	/* 404 return home link */
 	.return-link {
-		color: var(--color-tan);
+		color: var(--color-accent);
 		text-decoration: underline;
 		text-underline-offset: 4px;
 		display: inline-flex;
@@ -165,12 +183,12 @@
 
 	@media (hover: hover) {
 		.return-link:hover {
-			color: var(--color-blue-light);
+			color: var(--color-accent-hover);
 		}
 	}
 
 	.return-link:active {
-		color: var(--color-cream);
+		color: var(--color-accent-active);
 		@media (prefers-reduced-motion: no-preference) {
 			scale: 0.97;
 		}

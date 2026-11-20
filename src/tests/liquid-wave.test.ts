@@ -120,7 +120,28 @@ describe('LiquidWave', () => {
 			alpha: true,
 			antialias: false,
 			powerPreference: 'default',
+			failIfMajorPerformanceCaveat: true,
 		})
+	})
+
+	it('returns early and does not start animation when a software WebGL renderer is detected', () => {
+		const toggleButton = document.createElement('button')
+		toggleButton.id = 'liquid-wave-toggle'
+		toggleButton.hidden = true
+		document.body.appendChild(toggleButton)
+
+		const glMock = {
+			...createMockWebGLContext(),
+			getExtension: vi.fn((name: string) => (name === 'WEBGL_debug_renderer_info' ? { UNMASKED_RENDERER_WEBGL: 37446 } : null)),
+			getParameter: vi.fn(() => 'ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)'),
+		}
+		mockGetContext.mockReturnValue(glMock)
+		const rafSpy = vi.spyOn(window, 'requestAnimationFrame')
+
+		initLiquidWave()
+
+		expect(rafSpy).not.toHaveBeenCalled()
+		expect(toggleButton.hidden).toBe(true)
 	})
 
 	it('returns early and does not initialize WebGL when prefers-reduced-motion is true', () => {

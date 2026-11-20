@@ -470,6 +470,18 @@ function resizeFBO(gl: WebGLRenderingContext, fbo: FBO, width: number, height: n
 	gl.bindTexture(gl.TEXTURE_2D, null)
 }
 
+const SOFTWARE_RENDERER_RE = /swiftshader|llvmpipe|software|microsoft basic render/i
+
+function isSoftwareRenderer(gl: WebGLRenderingContext): boolean {
+	if (typeof gl.getExtension !== 'function' || typeof gl.getParameter !== 'function') {
+		return false
+	}
+	const debugInfo = gl.getExtension('WEBGL_debug_renderer_info')
+	if (!debugInfo) return false
+	const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
+	return typeof renderer === 'string' && SOFTWARE_RENDERER_RE.test(renderer)
+}
+
 export function initLiquidWave(options: LiquidWaveOptions = {}) {
 	const canvas = document.getElementById('liquid-wave-canvas') as HTMLCanvasElement | null
 	if (!canvas) return
@@ -482,8 +494,9 @@ export function initLiquidWave(options: LiquidWaveOptions = {}) {
 		alpha: true,
 		antialias: false,
 		powerPreference: 'default',
+		failIfMajorPerformanceCaveat: true,
 	})
-	if (!gl) return
+	if (!gl || isSoftwareRenderer(gl)) return
 
 	// Parse configuration from options or data attributes on canvas
 	const dataset = canvas.dataset
@@ -505,7 +518,7 @@ export function initLiquidWave(options: LiquidWaveOptions = {}) {
 	const isViscous = options.isViscous ?? (dataset.isViscous ? dataset.isViscous === 'true' : false)
 	const viscous = options.viscous ?? (dataset.viscous ? Number(dataset.viscous) : 30)
 	const iterationsViscous = options.iterationsViscous ?? (dataset.iterationsViscous ? Number(dataset.iterationsViscous) : 32)
-	const iterationsPoisson = options.iterationsPoisson ?? (dataset.iterationsPoisson ? Number(dataset.iterationsPoisson) : 32)
+	const iterationsPoisson = options.iterationsPoisson ?? (dataset.iterationsPoisson ? Number(dataset.iterationsPoisson) : 16)
 	const dt = options.dt ?? (dataset.dt ? Number(dataset.dt) : 0.014)
 	const BFECC = options.BFECC ?? (dataset.bfecc ? dataset.bfecc !== 'false' : true)
 	const resolution = options.resolution ?? (dataset.resolution ? Number(dataset.resolution) : 0.5)
@@ -647,7 +660,7 @@ export function initLiquidWave(options: LiquidWaveOptions = {}) {
 
 	let width = Math.max(1, window.innerWidth)
 	let height = Math.max(1, window.innerHeight)
-	let pixelRatio = Math.min(window.devicePixelRatio || 1, 2)
+	let pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5)
 	let displayWidth = Math.round(width * pixelRatio)
 	let displayHeight = Math.round(height * pixelRatio)
 	let fboWidth = Math.max(1, Math.round(resolution * width))
@@ -671,7 +684,7 @@ export function initLiquidWave(options: LiquidWaveOptions = {}) {
 
 	function resize() {
 		if (!canvas || !gl) return
-		pixelRatio = Math.min(window.devicePixelRatio || 1, 2)
+		pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5)
 		width = Math.max(1, window.innerWidth)
 		height = Math.max(1, window.innerHeight)
 		displayWidth = Math.round(width * pixelRatio)
@@ -918,9 +931,33 @@ export function initLiquidWave(options: LiquidWaveOptions = {}) {
 	let isVisible = true
 	let userPaused = false
 	let contextLost = false
+	let frameCount = 0
+	let lastFrameTime = 0
+	let slowFrameCount = 0
 
 	function render() {
 		if (!gl || !isVisible) return
+
+		const now = performance.now()
+		if (lastFrameTime > 0) {
+			const frameDelta = now - lastFrameTime
+			frameCount++
+			// After warmup, bail out if frames consistently take >100ms (e.g. unflagged software rasterizer)
+			if (frameCount > 3 && frameDelta > 100 && frameDelta < 1000) {
+				slowFrameCount++
+				if (slowFrameCount >= 6) {
+					pauseSimulation()
+					clearCanvas()
+					if (toggleButton) {
+						toggleButton.hidden = true
+					}
+					return
+				}
+			} else {
+				slowFrameCount = 0
+			}
+		}
+		lastFrameTime = now
 
 		updateAutoDriver()
 		updateMouse()
@@ -1087,6 +1124,8 @@ export function initLiquidWave(options: LiquidWaveOptions = {}) {
 	function resumeSimulation() {
 		if (!canRun()) return
 		isVisible = true
+		slowFrameCount = 0
+		lastFrameTime = 0
 		autoState.lastTime = performance.now()
 		if (animationFrameId === null) {
 			animationFrameId = requestAnimationFrame(render)

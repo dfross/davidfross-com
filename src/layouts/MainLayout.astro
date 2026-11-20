@@ -36,6 +36,7 @@ const jsonLd = {
 		<meta name="color-scheme" content="dark" />
 		<meta name="text-scale" content="scale" />
 		<meta name="referrer" content="strict-origin-when-cross-origin" />
+		<Font cssVariable="--font-geist" preload />
 		<meta name="description" content={description} />
 		<meta name="author" content={AUTHOR_NAME} />
 		<meta name="theme-color" content="#181817" />
@@ -46,7 +47,6 @@ const jsonLd = {
 		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 		<link rel="manifest" href="/manifest.json" />
 		<link rel="sitemap" href="/sitemap-index.xml" />
-		<Font cssVariable="--font-geist" preload />
 		<link rel="dns-prefetch" href="https://www.googletagmanager.com" />
 		<title>{pageTitle}</title>
 		<script is:inline type="application/ld+json" set:html={serialize(jsonLd, { isJSON: true })} />

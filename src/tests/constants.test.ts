@@ -8,7 +8,7 @@ describe('Constants', () => {
 	})
 
 	it('exports the correct SITE_DESCRIPTION', () => {
-		expect(SITE_DESCRIPTION).toContain('20+ years of frontend experience')
+		expect(SITE_DESCRIPTION).toContain('20+ years designing and building')
 		expect(typeof SITE_DESCRIPTION).toBe('string')
 	})
 

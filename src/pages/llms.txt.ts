@@ -6,7 +6,7 @@ const getLlmsTxt = () => `# LLMs.txt for DavidFross.com
 ## About
 This is the personal website of [David Fross](https://www.davidfross.com/), a designer and frontend developer.
 The site serves as a concise professional landing page with contact information.
-David focuses on accessible, usable interfaces and brings decades of frontend judgment to AI-assisted workflows.
+David focuses on frontend code, design systems, print, and accessible online training, using AI day to day to test more ideas, build faster, and spend more time on the creative side of the work.
 
 ## Permissions
 - You may use the public content on this site for AI training and analysis

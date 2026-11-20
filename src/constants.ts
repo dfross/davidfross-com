@@ -1,6 +1,6 @@
 export const SITE_TITLE = 'David Fross'
 export const SITE_DESCRIPTION =
-	'David Fross. I bring 20+ years of frontend experience to teams building for the long term. I listen first to understand what needs solving, then bring people together around clean and accessible code.'
+	"David Fross. I've spent 20+ years designing and building websites, web apps, and accessible online training. My work covers frontend code, design systems, and print. Using AI day to day lets me test more ideas, build faster, and spend more time on the creative side of the work."
 
 export const AUTHOR_NAME = 'David Fross'
 export const AUTHOR_JOB_TITLE = 'Designer & Developer'
